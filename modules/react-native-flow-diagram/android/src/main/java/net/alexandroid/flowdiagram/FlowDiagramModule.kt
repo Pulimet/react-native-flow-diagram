@@ -1,5 +1,6 @@
 package net.alexandroid.flowdiagram
 
+import android.util.Log
 import com.facebook.fbreact.specs.NativeFlowDiagramSpec
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.annotations.ReactModule
@@ -9,7 +10,13 @@ class FlowDiagramModule(reactContext: ReactApplicationContext) : NativeFlowDiagr
 
     companion object {
         const val NAME = "FlowDiagram"
+        private var appLaunchTime = 0L
+        fun onApplicationOnCreate() {
+            appLaunchTime = System.currentTimeMillis()
+            Log.d(NAME, "App has launched - onApplicationOnCreate called in FlowDiagramModule.")
+        }
     }
+
 
     override fun getName() = NAME
 
