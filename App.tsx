@@ -7,6 +7,7 @@
 
 import React from 'react';
 import type {PropsWithChildren} from 'react';
+import { multiply } from 'react-native-flow-diagram';
 import {
   ScrollView,
   StatusBar,
@@ -72,6 +73,8 @@ function App(): React.JSX.Element {
    */
   const safePadding = '5%';
 
+  const testFlowDiagram = multiply(3, 4);
+
   return (
     <View style={backgroundStyle}>
       <StatusBar
@@ -89,6 +92,9 @@ function App(): React.JSX.Element {
             paddingHorizontal: safePadding,
             paddingBottom: safePadding,
           }}>
+          <Section title="react-native-flow-diagram">
+            *Testing*: multiply(3, 4) = {testFlowDiagram}
+          </Section>
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.

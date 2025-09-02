@@ -1,6 +1,6 @@
 {
   "name": "react-native-flow-diagram",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A React Native logging utility that enables enhanced, structured logging. It includes built-in support for parsing logs to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze app behavior and processes.",
   "main": "src/index",
   "codegenConfig": {
