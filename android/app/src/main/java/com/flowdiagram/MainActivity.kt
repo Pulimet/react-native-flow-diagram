@@ -17,5 +17,7 @@ class MainActivity : ReactActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LogTime.onIntent(intent)
+        LogTime.logSync("MainActivity.onCreate")
+        LogTime.logAsync("MainActivity.onCreate -> Async Example")
     }
 }
