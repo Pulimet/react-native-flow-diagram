@@ -1,9 +1,13 @@
 # Description
 
-A React Native logging utility that enables enhanced, structured logging. It includes built-in support for parsing logs to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze app behavior and processes.
+A React Native logging utility that enables enhanced, structured logging. It includes built-in support for parsing logs
+to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze
+app behavior and processes.
 
 # Getting Started
+
 ## Android
+
 1. Add to settings.gradle
     ```groovy
     include ':react-native-flow-diagram'
@@ -17,16 +21,27 @@ A React Native logging utility that enables enhanced, structured logging. It inc
     override fun onCreate() {
         LogTime.onApplicationOnCreate() // <-- Add this line before "super.onCreate()"
         super.onCreate()
+        setupOkHttpClient()
         // Remaining code
     }
     ```
 4. Setup OkHttpClient with interceptor:
     ```kotlin
-    val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(LogTime.loggingInterceptor)
-        .build()
+    // import okhttp3.OkHttpClient
+    // import com.facebook.react.modules.network.OkHttpClientProvider
+    // import com.facebook.react.modules.network.ReactCookieJarContainer
+    private fun setupOkHttpClient() {
+        val okHttpClient = OkHttpClient.Builder()
+            .cookieJar(ReactCookieJarContainer())
+            .addInterceptor(LogTime.loggingInterceptor)
+            .build()
+
+        OkHttpClientProvider.setOkHttpClientFactory {
+            okHttpClient
+        }
+    }
    ```
-   
+
 5. MainActivity -> onCreate()
     ```kotlin
     class RNMainActivity : ReactActivity() {
@@ -38,6 +53,7 @@ A React Native logging utility that enables enhanced, structured logging. It inc
     ```
 
 ## iOS
+
 1. Add to AppDelegate.swift
     ```
     import FlowDiagramModule

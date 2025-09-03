@@ -13,6 +13,9 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import net.alexandroid.flowdiagram.LogTime
 import okhttp3.OkHttpClient
+import com.facebook.react.modules.network.OkHttpClientProvider
+import com.facebook.react.modules.network.ReactCookieJarContainer
+
 
 class MainApplication : Application(), ReactApplication {
 
@@ -45,7 +48,12 @@ class MainApplication : Application(), ReactApplication {
 
     private fun setupOkHttpClient() {
         val okHttpClient = OkHttpClient.Builder()
+            .cookieJar(ReactCookieJarContainer())
             .addInterceptor(LogTime.loggingInterceptor)
             .build()
+
+        OkHttpClientProvider.setOkHttpClientFactory {
+            okHttpClient
+        }
     }
 }

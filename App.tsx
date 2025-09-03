@@ -5,9 +5,9 @@
  * @format
  */
 
-import React from 'react';
 import type {PropsWithChildren} from 'react';
-import { multiply } from 'react-native-flow-diagram';
+import React, {useEffect} from 'react';
+import {logAsync, logSync} from 'react-native-flow-diagram';
 import {
   ScrollView,
   StatusBar,
@@ -24,6 +24,7 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {LogLevel} from 'react-native-flow-diagram/src/NativeFlowDiagram.ts';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -73,7 +74,11 @@ function App(): React.JSX.Element {
    */
   const safePadding = '5%';
 
-  const testFlowDiagram = multiply(3, 4);
+  useEffect(()=> {
+    logSync('Sync test', LogLevel.DEBUG);
+    logAsync('Async test', LogLevel.INFO);
+  }, []);
+
 
   return (
     <View style={backgroundStyle}>
@@ -93,7 +98,7 @@ function App(): React.JSX.Element {
             paddingBottom: safePadding,
           }}>
           <Section title="react-native-flow-diagram">
-            *Testing*: multiply(3, 4) = {testFlowDiagram}
+            *Testing*:
           </Section>
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this

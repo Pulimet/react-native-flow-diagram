@@ -13,5 +13,23 @@ class FlowDiagramModule(reactContext: ReactApplicationContext) : NativeFlowDiagr
 
     override fun getName() = NAME
 
-    override fun multiply(a: Double, b: Double) = a * b
+    override fun logSync(msg: String?, level: Double) {
+        if (msg == null) {
+            return
+        }
+        val logLevel = if (level == 0.0) LogLevel.DEBUG else LogLevel.INFO
+        LogTime.logSync(
+            msg,
+            LogType.RN,
+            logLevel
+        )
+    }
+
+    override fun logAsync(msg: String?, level: Double) {
+        if (msg == null) {
+            return
+        }
+        val logLevel = if (level == 0.0) LogLevel.DEBUG else LogLevel.INFO
+        LogTime.logAsync(msg, LogType.RN, logLevel)
+    }
 }

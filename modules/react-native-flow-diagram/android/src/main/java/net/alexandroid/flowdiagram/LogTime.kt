@@ -41,20 +41,22 @@ object LogTime {
     fun logSync(
         message: String,
         logType: LogType = LogType.AD,
+        logLevel: LogLevel = LogLevel.DEBUG
     ) {
         val type = addSpaces(logType.name, 2)
         val messageWithSuffix = addSuffixToMessage(message)
-        logI("${sinceCreated()} ${sinceRecent()} $type $messageWithSuffix")
+        logI("[${logLevel.name}][SYNC]${sinceCreated()} ${sinceRecent()} $type $messageWithSuffix")
         recentLogTime = System.currentTimeMillis()
     }
 
     fun logAsync(
         message: String,
         logType: LogType = LogType.AD,
+        logLevel: LogLevel = LogLevel.DEBUG
     ) {
         val type = addSpaces(logType.name, 2)
         val messageWithSuffix = addSuffixToMessage(message)
-        logI("[ASYNC] ${sinceCreated()} ${zeroTime()} $type $messageWithSuffix")
+        logI("[${logLevel.name}][ASYNC] ${sinceCreated()} ${zeroTime()} $type $messageWithSuffix")
     }
 
 
