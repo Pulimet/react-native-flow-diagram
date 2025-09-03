@@ -9,7 +9,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:8.7.2"
+    classpath "com.android.tools.build:gradle:${getExtOrDefault('gradleToolsVersion')}"
     // noinspection DifferentKotlinGradleVersion
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
   }
@@ -70,8 +70,11 @@ repositories {
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
+def okhttp_version = getExtOrDefault("okhttpVersiion")
 
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
+
 }

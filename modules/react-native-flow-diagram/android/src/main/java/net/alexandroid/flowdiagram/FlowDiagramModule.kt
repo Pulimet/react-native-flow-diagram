@@ -15,6 +15,8 @@ class FlowDiagramModule(reactContext: ReactApplicationContext) : NativeFlowDiagr
             appLaunchTime = System.currentTimeMillis()
             Log.d(NAME, "App has launched - onApplicationOnCreate called in FlowDiagramModule.")
         }
+
+        val loggingInterceptor = LoggingInterceptor()
     }
 
 

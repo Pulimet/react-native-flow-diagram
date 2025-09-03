@@ -20,6 +20,12 @@ A React Native logging utility that enables enhanced, structured logging. It inc
         // Remaining code
     }
     ```
+4. Setup OkHttpClient with FlowDiagramModule interceptor:
+    ```kotlin
+    val okHttpClient = OkHttpClient.Builder()
+     .addInterceptor(FlowDiagramModule.loggingInterceptor)
+     .build()
+   ```
 
 ## iOS
 1. Add to AppDelegate.swift
