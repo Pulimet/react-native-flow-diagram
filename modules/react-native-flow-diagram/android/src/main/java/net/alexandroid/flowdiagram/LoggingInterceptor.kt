@@ -24,7 +24,7 @@ class LoggingInterceptor : Interceptor {
         elapsedTime: Long = 0
     ) {
         if (!requestUrl.contains("symbolicate") && !requestUrl.contains("localhost")) {
-            LogTime.log(requestUrl, logType, responseCode, elapsedTime)
+            LogTime.logNetwork(requestUrl, logType, responseCode, elapsedTime)
         }
     }
 }

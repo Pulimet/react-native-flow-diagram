@@ -25,30 +25,38 @@ object LogTime {
 
     fun getTimeSinceAppLaunch(): String = (System.currentTimeMillis() - appOnCreateTime).toString()
 
-    fun log(
+    fun logNetwork(
         message: String,
         logType: LogType = LogType.AD,
         responseCode: Int = 0,
         elapsedTime: Long = 0
     ) {
         when (logType) {
-            LogType.AD, LogType.RN -> logAdRn(logType, message)
             LogType.NE_REQUEST -> logNeRequest(message)
             LogType.NE_RESPONSE -> logNeResponse(message, responseCode, elapsedTime)
+            else -> {}
         }
     }
 
-    private fun logAdRn(logType: LogType, message: String) {
+    fun logSync(
+        message: String,
+        logType: LogType = LogType.AD,
+    ) {
         val type = addSpaces(logType.name, 2)
         val messageWithSuffix = addSuffixToMessage(message)
-
-        if (message.contains("(Async)")) {
-            logI("${sinceCreated()} ${zeroTime()} $type $messageWithSuffix")
-        } else {
-            logI("${sinceCreated()} ${sinceRecent()} $type $messageWithSuffix")
-            recentLogTime = System.currentTimeMillis()
-        }
+        logI("${sinceCreated()} ${sinceRecent()} $type $messageWithSuffix")
+        recentLogTime = System.currentTimeMillis()
     }
+
+    fun logAsync(
+        message: String,
+        logType: LogType = LogType.AD,
+    ) {
+        val type = addSpaces(logType.name, 2)
+        val messageWithSuffix = addSuffixToMessage(message)
+        logI("[ASYNC] ${sinceCreated()} ${zeroTime()} $type $messageWithSuffix")
+    }
+
 
     private fun logNeRequest(message: String) {
         val messageWithSuffix = addSuffixToMessage("Request sent: $message")
