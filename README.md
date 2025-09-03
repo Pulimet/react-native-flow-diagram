@@ -12,20 +12,30 @@ A React Native logging utility that enables enhanced, structured logging. It inc
 2. Sync Gradle
 3. Android -> Application class
     ```kotlin
-    // import net.alexandroid.flowdiagram.FlowDiagramModule
+    // import net.alexandroid.flowdiagram.LogTime
     
     override fun onCreate() {
-        FlowDiagramModule.onApplicationOnCreate() // <-- Add this line before "super.onCreate()"
+        LogTime.onApplicationOnCreate() // <-- Add this line before "super.onCreate()"
         super.onCreate()
         // Remaining code
     }
     ```
-4. Setup OkHttpClient with FlowDiagramModule interceptor:
+4. Setup OkHttpClient with interceptor:
     ```kotlin
     val okHttpClient = OkHttpClient.Builder()
-     .addInterceptor(FlowDiagramModule.loggingInterceptor)
-     .build()
+        .addInterceptor(LogTime.loggingInterceptor)
+        .build()
    ```
+   
+5. MainActivity -> onCreate()
+    ```kotlin
+    class RNMainActivity : ReactActivity() {
+        public override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate()
+            LogTime.onIntent(intent)
+        }
+    }
+    ```
 
 ## iOS
 1. Add to AppDelegate.swift
@@ -33,9 +43,9 @@ A React Native logging utility that enables enhanced, structured logging. It inc
     import FlowDiagramModule
     
     class AppDelegate: RCTAppDelegate {
-      override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        FlowDiagramUtil.onAppLaunched()
-        // Remaining code
-      }
+        override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+            FlowDiagramUtil.onAppLaunched()
+            // Remaining code
+        }
     }    
     ```

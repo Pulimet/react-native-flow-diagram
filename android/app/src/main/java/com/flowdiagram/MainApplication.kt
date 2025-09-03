@@ -11,7 +11,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
-import net.alexandroid.flowdiagram.FlowDiagramModule
+import net.alexandroid.flowdiagram.LogTime
 import okhttp3.OkHttpClient
 
 class MainApplication : Application(), ReactApplication {
@@ -36,7 +36,7 @@ class MainApplication : Application(), ReactApplication {
         get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
     override fun onCreate() {
-        FlowDiagramModule.onApplicationOnCreate()
+        LogTime.onApplicationOnCreate()
         super.onCreate()
         setupOkHttpClient()
         SoLoader.init(this, OpenSourceMergedSoMapping)
@@ -45,7 +45,7 @@ class MainApplication : Application(), ReactApplication {
 
     private fun setupOkHttpClient() {
         val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(FlowDiagramModule.loggingInterceptor)
+            .addInterceptor(LogTime.loggingInterceptor)
             .build()
     }
 }
