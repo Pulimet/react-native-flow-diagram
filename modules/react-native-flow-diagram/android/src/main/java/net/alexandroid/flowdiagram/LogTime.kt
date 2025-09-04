@@ -46,7 +46,7 @@ object LogTime {
     ) {
         val type = addSpaces(logType.name, 2)
         val messageWithSuffix = addSuffixToMessage(message)
-        logI("[${logLevel.name}][SYNC]${sinceCreated()} ${sinceRecent()} $type $messageWithSuffix")
+        logI("${sinceCreated()} => [$type][${logLevel.name}][SYNC] $messageWithSuffix")
         recentLogTime = System.currentTimeMillis()
     }
 
@@ -57,19 +57,19 @@ object LogTime {
     ) {
         val type = addSpaces(logType.name, 2)
         val messageWithSuffix = addSuffixToMessage(message)
-        logI("[${logLevel.name}][ASYNC] ${sinceCreated()} ${zeroTime()} $type $messageWithSuffix")
+        logI("${sinceCreated()} => [$type][${logLevel.name}][ASYNC] $messageWithSuffix")
     }
 
 
     private fun logNeRequest(message: String) {
-        val messageWithSuffix = addSuffixToMessage("Request sent: $message")
-        logI("${sinceCreated()} $messageWithSuffix")
+        val messageWithSuffix = addSuffixToMessage("[NET][REQ] $message")
+        logI("${sinceCreated()} => $messageWithSuffix")
     }
 
     private fun logNeResponse(message: String, responseCode: Int, elapsedTime: Long) {
-        val messageWithSuffix = addSuffixToMessage("Response received: $message")
+        val messageWithSuffix = addSuffixToMessage("[NET][RSP] $message")
         logI(
-            "${sinceCreated()} " +
+            "${sinceCreated()} => " +
                     "$messageWithSuffix, " +
                     "Status: $responseCode, " +
                     "Elapsed time: $elapsedTime"

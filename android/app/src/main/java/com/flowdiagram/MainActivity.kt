@@ -13,6 +13,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
+import com.facebook.react.modules.network.OkHttpClientProvider
+
 
 class MainActivity : ReactActivity() {
 
@@ -33,7 +35,7 @@ class MainActivity : ReactActivity() {
         val request = Request.Builder()
             .url("https://api.agify.io/?name=Alexey")
             .build()
-        val okHttpClient = OkHttpClient.Builder().build()
+        val okHttpClient = OkHttpClientProvider.getOkHttpClient()
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 LogTime.logAsync("Network call failed: ${e.message}", logLevel = LogLevel.DEBUG)
