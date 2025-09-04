@@ -19,7 +19,7 @@ app behavior and processes.
     // import net.alexandroid.flowdiagram.LogTime
     
     override fun onCreate() {
-        LogTime.onApplicationOnCreate() // <-- Add this line before "super.onCreate()"
+        LogTime.onApplicationOnCreate(true) // <-- Add this line before "super.onCreate()"
         super.onCreate()
         setupOkHttpClient()
         // Remaining code
@@ -60,7 +60,7 @@ app behavior and processes.
     
     class AppDelegate: RCTAppDelegate {
         override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-            FlowDiagramUtil.onAppLaunched()
+            FlowDiagramUtil.onAppLaunched(true)
             // Remaining code
         }
     }    

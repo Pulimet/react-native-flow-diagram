@@ -12,9 +12,10 @@ object LogTime {
     private var recentLogTime: Long = 0
     private var messageCounter = HashMap<String, Int>() // HashMap to store message and its counter
 
-    fun onApplicationOnCreate() {
+    fun onApplicationOnCreate(logsEnabled: Boolean = false) {
         appOnCreateTime = System.currentTimeMillis()
         recentLogTime = appOnCreateTime
+        isLogEnabled = logsEnabled
     }
 
     val loggingInterceptor = LoggingInterceptor()

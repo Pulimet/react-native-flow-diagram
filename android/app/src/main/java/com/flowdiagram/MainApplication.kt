@@ -39,7 +39,7 @@ class MainApplication : Application(), ReactApplication {
         get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
     override fun onCreate() {
-        LogTime.onApplicationOnCreate()
+        LogTime.onApplicationOnCreate(true)
         super.onCreate()
         setupOkHttpClient()
         SoLoader.init(this, OpenSourceMergedSoMapping)

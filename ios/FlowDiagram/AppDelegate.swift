@@ -7,7 +7,7 @@ import FlowDiagramModule
 @main
 class AppDelegate: RCTAppDelegate {
   override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-    FlowDiagramUtil.onAppLaunched()
+    FlowDiagramUtil.onAppLaunched(true)
     self.moduleName = "FlowDiagram"
     self.dependencyProvider = RCTAppDependencyProvider()
 

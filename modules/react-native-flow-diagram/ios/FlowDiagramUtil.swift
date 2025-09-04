@@ -1,11 +1,14 @@
 import Foundation
 
 public struct FlowDiagramUtil {
-    // Static variable to hold the launch time in memory
+    public static var isLogEnabled: Bool = false
     public static var appLaunchTime: Date?
+    public static var recentLogTime: Date?
 
-    public static func onAppLaunched() {
+    public static func onAppLaunched(_ logsEnabled: Bool = false) {
         appLaunchTime = Date()
-        print("App has launched - onAppLaunched called in Swift. \(appLaunchTime!)")
+        recentLogTime = appLaunchTime
+        isLogEnabled = logsEnabled
+        print("App has launched - onAppLaunched called in Swift. \(launchTime)")
     }
 }
