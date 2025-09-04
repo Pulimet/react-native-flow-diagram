@@ -1,10 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import type {PropsWithChildren} from 'react';
 import React, {useEffect} from 'react';
 import {logAsync, logSync} from 'react-native-flow-diagram';
@@ -63,22 +56,12 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
   const safePadding = '5%';
 
-  useEffect(()=> {
+  useEffect(() => {
     logSync('Sync test', LogLevel.DEBUG);
     logAsync('Async test', LogLevel.INFO);
   }, []);
-
 
   return (
     <View style={backgroundStyle}>
@@ -86,10 +69,9 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        style={backgroundStyle}>
+      <ScrollView style={backgroundStyle}>
         <View style={{paddingRight: safePadding}}>
-          <Header/>
+          <Header />
         </View>
         <View
           style={{
@@ -97,9 +79,7 @@ function App(): React.JSX.Element {
             paddingHorizontal: safePadding,
             paddingBottom: safePadding,
           }}>
-          <Section title="react-native-flow-diagram">
-            *Testing*:
-          </Section>
+          <Section title="react-native-flow-diagram">*Testing*:</Section>
           <Section title="Step One">
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
