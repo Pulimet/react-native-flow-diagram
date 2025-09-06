@@ -65,3 +65,9 @@ app behavior and processes.
         }
     }    
     ```
+
+# How to add log events
+### RN
+### Android
+### iOS
+

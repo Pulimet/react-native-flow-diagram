@@ -15,7 +15,6 @@ import okhttp3.Response
 import java.io.IOException
 import com.facebook.react.modules.network.OkHttpClientProvider
 
-
 class MainActivity : ReactActivity() {
 
     override fun getMainComponentName(): String = "FlowDiagram"
