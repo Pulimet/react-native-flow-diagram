@@ -1,0 +1,59 @@
+from datetime import datetime
+
+########## PREPARE #########
+# cd [root of RN project]
+# python3 -m venv .venv
+# source .venv/bin/activate
+# pip install matplotlib --timeout 1000 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+
+########## LAUNCH #########
+# python3 main.py
+
+############ Android ############
+# Global Config
+IS_ANDROID_ENABLED = False
+IS_IOS_ENABLED = True
+
+# App config
+PACKAGE = "com.flowdiagram"
+LOG_TAG = "FlowDiagramTime"
+
+# Android Launch Config
+EXTRA_ENABLED = False # Used when FlowDiagram is disabled by default and app should be launched with special extra
+ACTIVITY = "com.flowdiagram.MainActivity"
+EXTRA_KEY = "time"
+EXTRA_VALUE = "true"
+
+# Measurements Config
+LAUNCH_COUNT = 1
+WAIT_TIME = 6
+WAIT_LOGS = 1
+
+# Parsing Config
+SHOW_NETWORK_REQUEST = True
+SHOW_NETWORK_RESPONSE = True
+SHOW_REGULAR_LOG = True
+FILTER_NETWORK_REQUEST = ""
+
+# Output Folder Config
+OUTPUT_DIR = "output"
+DATE = datetime.now().strftime('%y-%m-%d')
+OUTPUT_PATH = f"{OUTPUT_DIR}/{DATE}"
+
+# Output File Config
+FILE_NAME_PREFIX = "measure"
+DATE_TIME = datetime.now().strftime('%y-%m-%d_%H-%M')
+FILE_NAME = f"{FILE_NAME_PREFIX}_{DATE_TIME}"
+FILE_PATH = f"{OUTPUT_PATH}/{FILE_NAME}"
+
+# Diagram Config
+VISUAL_URL = 160
+VISUAL_ADD_TIME_AT_THE_END = 8000
+PNG_PATH = f"{FILE_PATH}.png"
+
+# Action After Complete
+OPEN_CSV = False
+OPEN_PNG = False
+
+
+
