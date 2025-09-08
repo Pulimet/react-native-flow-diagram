@@ -37,7 +37,8 @@ def clear_logs():
         clear_android_logs()
 
     if _is_ios_validated:
-        clear_ios_logs()
+        print("WARNING: clear_logs for ios ignored. Current solution is to restart simulator and it takes at least 15 ms.")
+        # clear_ios_logs()
 
 def launch_app():
     if _is_android_validated:
