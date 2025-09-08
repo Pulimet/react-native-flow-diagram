@@ -4,9 +4,9 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
 from config import OPEN_PNG, VISUAL_URL, VISUAL_ADD_TIME_AT_THE_END, PNG_PATH
-from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_RN, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ
+from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_IOS, TYPE_RN, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ, RSP
 
-ANDROID_COLOR = "blue"
+NATIVE_COLOR = "blue"
 RN_COLOR = "green"
 NET_REQUEST_COLOR = "orange"
 NET_RESPONSE_COLOR = "yellow"
@@ -48,11 +48,11 @@ def save_png(input_averages, png_path):
 
     # --- Create a visual legend with colored boxes ---
     legend_data = [
-        ("Android (Sync)", ANDROID_COLOR),
+        ("Native (Sync)", NATIVE_COLOR),
         ("React Native", RN_COLOR),
         ("Network Request", NET_REQUEST_COLOR),
         ("Network Response", NET_RESPONSE_COLOR),
-        ("Async (AD or RN)", ASYNC_COLOR)
+        ("Async (Native/RN)", ASYNC_COLOR)
     ]
 
     legend_handles = [mpatches.Patch(color=color, label=label, alpha=0.5) for label, color in legend_data]
@@ -77,18 +77,27 @@ def save_png(input_averages, png_path):
         width = item[DURATION_PARAM]
 
         # Each type should have different color
-        color = ANDROID_COLOR if item[TYPE_PARAM] == TYPE_AD else RN_COLOR if item[TYPE_PARAM] == TYPE_RN else NET_RESPONSE_COLOR
+        type_param = item[TYPE_PARAM]
+        color = RN_COLOR # TYPE_RN
+
+        if type_param == TYPE_AD or type_param == TYPE_IOS:
+            color = NATIVE_COLOR
 
         if item.get(SYNC_ASYNC_PARAM) == ASYNC:
             width = 40
             color = ASYNC_COLOR
 
-        if item.get(REQ_RSP_PARAM) == REQ:
+        if type_param == TYPE_NET and item.get(REQ_RSP_PARAM) == REQ:
             width = 40
             color = NET_REQUEST_COLOR
 
+        if type_param == TYPE_NET and item.get(REQ_RSP_PARAM) == RSP:
+            color = NET_RESPONSE_COLOR
+
+        print(f"{type_param} -> {color}")
+
         # If type is NE then cut message to 50 characters
-        if item[TYPE_PARAM] == TYPE_NET:
+        if type_param == TYPE_NET:
             item[MSG_PARAM] = item[MSG_PARAM][:VISUAL_URL] + '...'
 
         # Text label for the message

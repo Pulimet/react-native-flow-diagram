@@ -1,5 +1,6 @@
 import Foundation
 import React
+import os.log
 
 @objc public enum LogType: Int, CustomStringConvertible {
     case IOS, RN, NE_REQUEST, NE_RESPONSE
@@ -38,6 +39,7 @@ public class FlowDiagramUtil: NSObject {
     
     private static var messageCounter = [String: Int]() // Message and its counter
     private static let logMsChars = 9
+    private static let osLog = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "com.flowdiagram", category: "FlowDiagram")
 
     public static func onAppLaunched(_ logsEnabled: Bool = false) {
         appLaunchTime = Date()
@@ -84,12 +86,12 @@ public class FlowDiagramUtil: NSObject {
 
     private static func logNeRequest(_ message: String) {
         let messageWithSuffix = addSuffixToMessage("[NET][REQ] \(message)")
-        print("\(sinceCreated()) => \(messageWithSuffix)")
+        log(msg: "\(sinceCreated()) => \(messageWithSuffix)")
     }
 
     private static func logNeResponse(_ message: String, responseCode: Int32, elapsedTime: Int64) {
         let messageWithSuffix = addSuffixToMessage("[NET][RSP] \(message)")
-        print("\(sinceCreated()) => \(messageWithSuffix), Status: \(responseCode), Elapsed time: \(elapsedTime)")
+        log(msg: "\(sinceCreated()) => \(messageWithSuffix), Status: \(responseCode), Elapsed time: \(elapsedTime)")
     }
     
     @objc
@@ -101,7 +103,7 @@ public class FlowDiagramUtil: NSObject {
         if isLogEnabled {
             let type = addSpaces(time: logType.description, spacesNum: 3)
             let messageWithSuffix = addSuffixToMessage(message)
-            print("\(sinceCreated()) => [\(type)][\(logLevel.description)][SYNC] \(messageWithSuffix)")
+            log(msg: "\(sinceCreated()) => [\(type)][\(logLevel.description)][SYNC] \(messageWithSuffix)")
         }
     }
     
@@ -114,8 +116,12 @@ public class FlowDiagramUtil: NSObject {
         if isLogEnabled {
             let type = addSpaces(time: logType.description, spacesNum: 3)
             let messageWithSuffix = addSuffixToMessage(message)
-            print("\(sinceCreated()) => [\(type)][\(logLevel.description)][ASYNC] \(messageWithSuffix)")
+            log(msg: "\(sinceCreated()) => [\(type)][\(logLevel.description)][ASYNC] \(messageWithSuffix)")
         }
+    }
+    
+    private static func log(msg: String) {
+        os_log("%{public}@", log: osLog, type: .info, msg)
     }
     
     private static func currentMillis() -> Int64 {

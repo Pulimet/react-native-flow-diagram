@@ -17,7 +17,10 @@ IS_IOS_ENABLED = True
 # You can find this in Xcode under Target > General > Identity > Bundle Identifier.
 BUNDLE_ID = "org.reactjs.native.example.FlowDiagram" # iOS
 PACKAGE = "com.flowdiagram" # Android
-LOG_TAG = "FlowDiagramTime"
+ANDROID_LOG_TAG = "FlowDiagramTime"
+
+#iOS config
+IOS_LOG_TAG = "FlowDiagram:FlowDiagram"
 
 # Android Launch Config
 EXTRA_ANDROID_ENABLED = False # Used when FlowDiagram is disabled by default and app should be launched with special extra

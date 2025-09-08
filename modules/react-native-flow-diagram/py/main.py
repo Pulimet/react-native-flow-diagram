@@ -20,16 +20,25 @@ if __name__ == "__main__":
     compile_package()
 
     # Launch and measure
-    all_data = start_measurements()
+    all_android_data, all_ios_data = start_measurements()
 
     # Clean
     prevent_screen_lock(False)
     close_app()
 
-    # Calculate
-    # averages = calculate_averages(all_data)
+    create_folders()
 
-    # Save and show results
-    # create_folders()
-    # save_csv_with_data(averages)
-    # save_png_with_data(averages)
+    # Calculate
+    if all_android_data:
+        averages_android = calculate_averages(all_android_data)
+        # Save and show results
+        save_csv_with_data(averages_android)
+        save_png_with_data(averages_android)
+
+    if all_ios_data:
+        averages_ios = calculate_averages(all_ios_data)
+        # Save and show results
+        save_csv_with_data(averages_ios)
+        save_png_with_data(averages_ios)
+
+

@@ -1,7 +1,7 @@
-from config import IS_ANDROID_ENABLED, IS_IOS_ENABLED, EXTRA_ANDROID_ENABLED
+from config import IS_ANDROID_ENABLED, IS_IOS_ENABLED, EXTRA_ANDROID_ENABLED, WAIT_LOGS, WAIT_TIME
 from ad_device_utils import validate_android, prevent_android_screen_lock, close_android_app, compile_android_package, launch_android_app, launch_activity_with_extras
-from ios_device_utils import validate_ios, prevent_ios_screen_lock, close_ios_app, launch_ios_app, clear_ios_logs
-from logcat_utils import clear_android_logs
+from ios_device_utils import validate_ios, prevent_ios_screen_lock, close_ios_app, launch_ios_app, start_ios_log_capture, stop_ios_log_capture
+from logcat_utils import clear_android_logs, capture_android_logs
 
 # Module-level variables to store the validation state.
 # They are accessible by any function within this file after being set.
@@ -36,10 +36,6 @@ def clear_logs():
     if _is_android_validated:
         clear_android_logs()
 
-    if _is_ios_validated:
-        print("WARNING: clear_logs for ios ignored. Current solution is to restart simulator and it takes at least 15 ms.")
-        # clear_ios_logs()
-
 def launch_app():
     if _is_android_validated:
         if EXTRA_ANDROID_ENABLED:
@@ -50,4 +46,18 @@ def launch_app():
     if _is_ios_validated:
         launch_ios_app()
 
+def capture_logs_android():
+    android_logs = None
+    if _is_android_validated:
+        android_logs = capture_android_logs(WAIT_LOGS)
 
+    return android_logs
+
+def start_capturing_ios_logs():
+    if _is_ios_validated:
+        start_ios_log_capture()
+
+def stop_capturing_ios_logs():
+    if _is_ios_validated:
+        return stop_ios_log_capture()
+    return None

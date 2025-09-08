@@ -1,7 +1,7 @@
 import subprocess
 import re
 import os
-import time
+from ios_log_collector import IOSLogCollector
 
 from config import BUNDLE_ID
 
@@ -13,6 +13,7 @@ _real_device_count = 0
 _booted_sim_count = 0
 _is_simulator_target = False
 _is_real_device_target = False
+_log_collector = None
 
 def validate_ios():
     """Validates that exactly one iOS device or simulator is ready."""
@@ -193,54 +194,6 @@ def close_ios_app():
         if isinstance(e, FileNotFoundError):
             print(f"Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
 
-def clear_ios_logs():
-    """
-    Clears logs on the iOS simulator by restarting it.
-    This functionality is not supported for physical devices via command line.
-    """
-    print("Clearing iOS logs...")
-    try:
-        if _is_simulator_target:
-            udid = _get_booted_simulator_udid()
-            if not udid:
-                print("ERROR: Could not find the UDID of the booted simulator to restart it.")
-                return
-
-            print("Restarting the iOS simulator to clear logs...")
-
-            # Shutdown the simulator. Don't check for errors, it might already be off.
-            print("Shutting down simulator...")
-            subprocess.run(["xcrun", "simctl", "shutdown", "booted"], capture_output=True)
-
-            # Give it a moment to shut down completely.
-            time.sleep(3)
-
-            # Boot the simulator again
-            print(f"Booting simulator with UDID: {udid}...")
-            subprocess.run(["xcrun", "simctl", "boot", udid], check=True, capture_output=True)
-
-            # Wait for the boot process to settle.
-            print("Waiting for simulator to boot... (approx. 15 seconds)")
-            time.sleep(15)
-            print("Simulator restarted. Logs should be cleared.")
-
-        elif _is_real_device_target:
-            print("INFO: Clearing logs on physical iOS devices is not supported by this script due to command-line limitations.")
-            print("Please clear logs manually if needed.")
-
-        elif _get_booted_simulator_count() > 1 or _get_real_device_count() > 1:
-            print("INFO: Multiple devices/simulators found. No action taken.")
-
-        else:
-            print("INFO: No single iOS simulator or device found. No action taken.")
-
-    except subprocess.CalledProcessError as e:
-        print("ERROR: A command failed while trying to boot the simulator.")
-        print(f"Command: {' '.join(e.cmd)}")
-        print(f"Stderr: {e.stderr.decode('utf-8').strip()}")
-    except FileNotFoundError as e:
-        print(f"ERROR: Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
-
 def launch_ios_app():
     """Launches the app on the booted simulator."""
     print(f"Launching app with bundle ID: {BUNDLE_ID}...")
@@ -266,3 +219,25 @@ def launch_ios_app():
         print(f"Stderr: {e.stderr.strip()}")
     except FileNotFoundError:
         print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
+
+def start_ios_log_capture():
+    """
+    Initializes and starts capturing logs from a booted iOS simulator or a connected physical device.
+    """
+    global _log_collector
+    if not _log_collector:
+        _log_collector = IOSLogCollector()
+    _log_collector.start(is_simulator=_is_simulator_target, is_real_device=_is_real_device_target)
+
+def stop_ios_log_capture():
+    """
+    Stops capturing logs and returns the collected log lines.
+    """
+    global _log_collector
+    if not _log_collector:
+        print("INFO: Log capture was never started.")
+        return []
+
+    logs = _log_collector.stop()
+    _log_collector = None # Clean up
+    return logs

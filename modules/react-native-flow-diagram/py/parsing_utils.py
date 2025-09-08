@@ -1,4 +1,4 @@
-from config import SHOW_NETWORK_REQUEST, SHOW_NETWORK_RESPONSE, SHOW_REGULAR_LOG, FILTER_NETWORK_REQUEST, LOG_TAG
+from config import SHOW_NETWORK_REQUEST, SHOW_NETWORK_RESPONSE, SHOW_REGULAR_LOG, FILTER_NETWORK_REQUEST
 
 ARROW = "=>"
 
@@ -12,6 +12,7 @@ SYNC_ASYNC_PARAM = "sync_async"
 
 TYPE_NET = "NET"
 TYPE_AD = "AD"
+TYPE_IOS = "IOS"
 TYPE_RN = "RN"
 SYNC = "SYNC"
 ASYNC = "ASYNC"
@@ -20,7 +21,7 @@ NET_RSP = "[RSP]"
 REQ = "REQ"
 RSP = "RSP"
 
-def parse_data(logcat_output):
+def parse_logs(logcat_output, log_tag):
     print("Parsing the logcat output...")
     print("LogCat Output length: ", len(logcat_output))
     parsed_data = []
@@ -33,12 +34,11 @@ def parse_data(logcat_output):
         if arrow_index == -1:
             continue
 
-        # Remove all before LOG_TAG including tag itself
-        line = line[line.find(LOG_TAG) + len(LOG_TAG) + 2:]
+        # Remove all before log_tag including tag itself
+        line = line[line.find(log_tag) + len(log_tag) + 2:]
         time_since_start = int(line[:10].replace(" ", ""))
 
         line = line[line.find(ARROW) + 3:]
-        # print(line)
 
         # Find in the line a value that is between the first [XXXXXXX]
         start_bracket = line.find('[')
