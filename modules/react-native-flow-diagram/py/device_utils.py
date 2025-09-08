@@ -1,6 +1,7 @@
-from config import IS_ANDROID_ENABLED, IS_IOS_ENABLED
-from ad_device_utils import validate_android, prevent_android_screen_lock, close_android_app, compile_android_package
-from ios_device_utils import validate_ios, prevent_ios_screen_lock, close_ios_app
+from config import IS_ANDROID_ENABLED, IS_IOS_ENABLED, EXTRA_ANDROID_ENABLED
+from ad_device_utils import validate_android, prevent_android_screen_lock, close_android_app, compile_android_package, launch_android_app, launch_activity_with_extras
+from ios_device_utils import validate_ios, prevent_ios_screen_lock, close_ios_app, launch_ios_app, clear_ios_logs
+from logcat_utils import clear_android_logs
 
 # Module-level variables to store the validation state.
 # They are accessible by any function within this file after being set.
@@ -30,5 +31,22 @@ def close_app():
 def compile_package():
     if _is_android_validated:
         compile_android_package()
+
+def clear_logs():
+    if _is_android_validated:
+        clear_android_logs()
+
+    if _is_ios_validated:
+        clear_ios_logs()
+
+def launch_app():
+    if _is_android_validated:
+        if EXTRA_ANDROID_ENABLED:
+            launch_activity_with_extras()
+        else:
+             launch_android_app()
+
+    if _is_ios_validated:
+        launch_ios_app()
 
 

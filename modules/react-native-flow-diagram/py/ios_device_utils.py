@@ -191,3 +191,32 @@ def close_ios_app():
         print("ERROR: A command failed while trying to close the app.")
         if isinstance(e, FileNotFoundError):
             print(f"Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
+
+def clear_ios_logs():
+    print("TODO: clear_ios_logs")
+
+def launch_ios_app():
+    """Launches the app on the booted simulator."""
+    print(f"Launching app with bundle ID: {BUNDLE_ID}...")
+
+    try:
+        if _is_simulator_target:
+            command = ["xcrun", "simctl", "launch", "booted", BUNDLE_ID]
+            subprocess.run(command, check=True, capture_output=True, text=True)
+            print(f"Successfully launched app with bundle ID: {BUNDLE_ID} on the simulator.")
+
+        elif _is_real_device_target:
+            print("INFO: Launching apps on physical devices is not supported by this script.")
+            print("Please launch the app manually on the device.")
+
+        elif _get_booted_simulator_count() > 1 or _get_real_device_count() > 1:
+            print("INFO: Multiple devices/simulators found. No action taken.")
+
+        else:
+            print("INFO: No single iOS simulator or device found. No action taken.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to launch app with bundle ID: {BUNDLE_ID}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")

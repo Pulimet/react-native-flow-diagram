@@ -46,7 +46,7 @@ def compile_android_package():
     print("Compiling the package...")
     subprocess.run(["adb", "shell", "cmd", "package", "compile", "-m", "speed", "-f", PACKAGE])
 
-def launch_app():
+def launch_android_app():
     print("Launching the app...")
     subprocess.run(
         ["adb", "shell", "monkey", "-p", PACKAGE, "-c", "android.intent.category.LAUNCHER", "1"],

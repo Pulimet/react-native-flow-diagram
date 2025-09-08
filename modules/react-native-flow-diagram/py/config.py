@@ -20,7 +20,7 @@ PACKAGE = "com.flowdiagram" # Android
 LOG_TAG = "FlowDiagramTime"
 
 # Android Launch Config
-EXTRA_ENABLED = False # Used when FlowDiagram is disabled by default and app should be launched with special extra
+EXTRA_ANDROID_ENABLED = False # Used when FlowDiagram is disabled by default and app should be launched with special extra
 ACTIVITY = "com.flowdiagram.MainActivity"
 EXTRA_KEY = "time"
 EXTRA_VALUE = "true"
