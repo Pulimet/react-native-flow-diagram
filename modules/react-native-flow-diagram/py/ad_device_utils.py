@@ -1,21 +1,12 @@
 import subprocess
 
-from config import PACKAGE, ACTIVITY, EXTRA_KEY, EXTRA_VALUE, IS_ANDROID_ENABLED, IS_IOS_ENABLED
+from config import PACKAGE, ACTIVITY, EXTRA_KEY, EXTRA_VALUE
 
 REQUIRED_DEVICES = 1
 # Screen timeout 5 minutes as a string
 TIMEOUT_5 = "300000"
 # Screen timeout  60 minutes as a string
 TIMEOUT_60 = "3600000"
-
-def validate_device_and_package():
-    is_android_passed = IS_ANDROID_ENABLED and validate_android()
-    is_ios_passed = IS_IOS_ENABLED and validate_ios()
-    return is_android_passed, is_ios_passed
-
-def validate_ios():
-    return False
-
 
 def validate_android():
     # Check if the required number of devices is connected
@@ -37,8 +28,7 @@ def validate_android():
     print("Validation passed: Device connected and package installed.")
     return True
 
-
-def prevent_screen_lock(enable=True):
+def prevent_android_screen_lock(enable=True):
     if enable:
         print("Preventing the device screen from locking...")
     else:
@@ -48,11 +38,11 @@ def prevent_screen_lock(enable=True):
                TIMEOUT_60 if enable else TIMEOUT_5]
     subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-def close_app():
+def close_android_app():
     print("Closing the app if it was running...")
     subprocess.run(["adb", "shell", "am", "force-stop", PACKAGE])
 
-def compile_package():
+def compile_android_package():
     print("Compiling the package...")
     subprocess.run(["adb", "shell", "cmd", "package", "compile", "-m", "speed", "-f", PACKAGE])
 

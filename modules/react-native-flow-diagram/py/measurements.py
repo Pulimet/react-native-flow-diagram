@@ -1,8 +1,9 @@
 import time
 
 from config import LAUNCH_COUNT, WAIT_TIME, WAIT_LOGS, EXTRA_ENABLED
-from ad_device_utils import close_app, launch_app, launch_activity_with_extras
-from logcat_utils import capture_logcat_output, clear_logcat
+from device_utils import close_app
+from ad_device_utils import launch_app, launch_activity_with_extras
+from logcat_utils import capture_android_logs, clear_android_logs
 from parsing_utils import parse_data
 
 def start_measurements():
@@ -16,7 +17,7 @@ def start_measurements():
 
 def launch_and_collect_data():
     close_app()
-    clear_logcat()
+    clear_android_logs()
     if EXTRA_ENABLED:
         launch_activity_with_extras()
     else:
@@ -26,6 +27,6 @@ def launch_and_collect_data():
     print(f"Waiting for {WAIT_TIME} seconds...")
     time.sleep(WAIT_TIME)
 
-    logcat_output = capture_logcat_output(WAIT_LOGS)
+    logcat_output = capture_android_logs(WAIT_LOGS)
 
     return parse_data(logcat_output)

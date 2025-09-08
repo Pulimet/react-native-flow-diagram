@@ -1,4 +1,4 @@
-from ad_device_utils import validate_device_and_package, prevent_screen_lock, close_app, compile_package
+from device_utils import validate_device_and_package, prevent_screen_lock, close_app, compile_package
 from measurements import start_measurements
 from calc_average import calculate_averages
 from utils import create_folders
@@ -14,7 +14,6 @@ if __name__ == "__main__":
         print("Validation failed for all enabled platforms. Exiting.")
         exit(1)
 
-
     # Prepare
     prevent_screen_lock(True)
     close_app()
@@ -28,9 +27,9 @@ if __name__ == "__main__":
     close_app()
 
     # Calculate
-    averages = calculate_averages(all_data)
+    # averages = calculate_averages(all_data)
 
     # Save and show results
-    create_folders()
-    save_csv_with_data(averages)
-    save_png_with_data(averages)
+    # create_folders()
+    # save_csv_with_data(averages)
+    # save_png_with_data(averages)

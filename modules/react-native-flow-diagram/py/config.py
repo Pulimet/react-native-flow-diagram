@@ -9,13 +9,14 @@ from datetime import datetime
 ########## LAUNCH #########
 # python3 main.py
 
-############ Android ############
 # Global Config
 IS_ANDROID_ENABLED = False
 IS_IOS_ENABLED = True
 
 # App config
-PACKAGE = "com.flowdiagram"
+# You can find this in Xcode under Target > General > Identity > Bundle Identifier.
+BUNDLE_ID = "org.reactjs.native.example.FlowDiagram" # iOS
+PACKAGE = "com.flowdiagram" # Android
 LOG_TAG = "FlowDiagramTime"
 
 # Android Launch Config
