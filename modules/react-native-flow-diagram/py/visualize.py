@@ -94,7 +94,7 @@ def save_png(input_averages, png_path):
         if type_param == TYPE_NET and item.get(REQ_RSP_PARAM) == RSP:
             color = NET_RESPONSE_COLOR
 
-        print(f"{type_param} -> {color}")
+        # print(f"{type_param} -> {color}")
 
         # If type is NE then cut message to 50 characters
         if type_param == TYPE_NET:

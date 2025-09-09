@@ -6,6 +6,19 @@ from datetime import datetime
 # source .venv/bin/activate
 # pip install matplotlib --timeout 1000 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
 
+##### IDB ######
+# brew tap facebook/fb
+# brew install idb-companion
+# brew install pipx
+# pipx ensurepath
+# pipx install fb-idb
+
+# idb list-targets | grep Booted
+# Copy UUID
+# idb launch --udid [UUID] org.reactjs.native.example.FlowDiagram
+# idb launch --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
+# idb terminate --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
+
 ########## LAUNCH #########
 # python3 main.py
 

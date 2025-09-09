@@ -14,15 +14,18 @@ _booted_sim_count = 0
 _is_simulator_target = False
 _is_real_device_target = False
 _log_collector = None
+_uuid = None
 
 def validate_ios():
     """Validates that exactly one iOS device or simulator is ready."""
     try:
-        global _real_device_count, _booted_sim_count, _is_simulator_target, _is_real_device_target
+        global _real_device_count, _booted_sim_count, _is_simulator_target, _is_real_device_target, _uuid
         _real_device_count = _get_real_device_count()
         _booted_sim_count = _get_booted_simulator_count()
         _is_simulator_target = (_booted_sim_count == 1 and _real_device_count == 0)
         _is_real_device_target = (_real_device_count == 1 and _booted_sim_count == 0)
+        if _is_simulator_target:
+            _uuid = _get_booted_simulator_udid()
 
         print(f"real_device_count: {_real_device_count}")
         print(f"booted_sim_count: {_booted_sim_count}")
@@ -75,6 +78,25 @@ def _get_booted_simulator_count():
             booted_sim_count += 1
     return booted_sim_count
 
+def _get_booted_simulator_udid():
+    """Gets the UDID of the single booted iOS simulator."""
+    simulators_output = subprocess.check_output(["xcrun", "simctl", "list", "devices"], text=True)
+    lines = simulators_output.splitlines()
+    ios_section_regex = re.compile(r"^-- iOS [\d.]+ --$")
+    in_ios_section = False
+    for line in lines:
+        if ios_section_regex.match(line.strip()):
+            in_ios_section = True
+        elif in_ios_section and line.strip().startswith("--"):
+            in_ios_section = False
+
+        if in_ios_section and '(Booted)' in line:
+            # Extract the UDID from a line like: "iPhone 15 Pro (UDID) (Booted)"
+            match = re.search(r'([A-F0-9]{8}-(?:[A-F0-9]{4}-){3}[A-F0-9]{12})', line)
+            if match:
+                return match.group(1)
+    return None
+
 def prevent_ios_screen_lock(enable=True):
     """
     Prevents the screen from locking on a booted iOS simulator.
@@ -85,15 +107,12 @@ def prevent_ios_screen_lock(enable=True):
             action_str = "Disabling" if enable else "Enabling"
             print(f"{action_str} screen auto-lock on the iOS simulator...")
 
-            # We must modify the simulator's plist file directly on the host machine.
-            # First, get the UDID of the booted simulator.
-            udid = _get_booted_simulator_udid()
-            if not udid:
+            if not _uuid:
                 print("ERROR: Could not find the UDID of the booted simulator.")
                 return
 
             # Construct the path to the springboard preferences file.
-            plist_path = os.path.expanduser(f"~/Library/Developer/CoreSimulator/Devices/{udid}/data/Library/Preferences/com.apple.springboard.plist")
+            plist_path = os.path.expanduser(f"~/Library/Developer/CoreSimulator/Devices/{_uuid}/data/Library/Preferences/com.apple.springboard.plist")
 
             # Ensure the directory for the plist file exists, as it might not on a fresh simulator.
             os.makedirs(os.path.dirname(plist_path), exist_ok=True)
@@ -145,25 +164,6 @@ def prevent_ios_screen_lock(enable=True):
     except FileNotFoundError as e:
         print(f"ERROR: Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
 
-def _get_booted_simulator_udid():
-    """Gets the UDID of the single booted iOS simulator."""
-    simulators_output = subprocess.check_output(["xcrun", "simctl", "list", "devices"], text=True)
-    lines = simulators_output.splitlines()
-    ios_section_regex = re.compile(r"^-- iOS [\d.]+ --$")
-    in_ios_section = False
-    for line in lines:
-        if ios_section_regex.match(line.strip()):
-            in_ios_section = True
-        elif in_ios_section and line.strip().startswith("--"):
-            in_ios_section = False
-
-        if in_ios_section and '(Booted)' in line:
-            # Extract the UDID from a line like: "iPhone 15 Pro (UDID) (Booted)"
-            match = re.search(r'([A-F0-9]{8}-(?:[A-F0-9]{4}-){3}[A-F0-9]{12})', line)
-            if match:
-                return match.group(1)
-    return None
-
 def close_ios_app():
     """Closes the app on the connected iOS device or booted simulator."""
     print(f"Closing app with bundle ID: {BUNDLE_ID}...")
@@ -180,6 +180,7 @@ def close_ios_app():
                 print("App was not running on the simulator or could not be terminated.")
 
         elif _is_real_device_target:
+            # TODO idb terminate --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
             print("INFO: Closing apps on physical devices is not supported by this script due to command-line limitations.")
             print("Please close the app manually on the device.")
 
@@ -205,6 +206,7 @@ def launch_ios_app():
             print(f"Successfully launched app with bundle ID: {BUNDLE_ID} on the simulator.")
 
         elif _is_real_device_target:
+            # TODO idb launch --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
             print("INFO: Launching apps on physical devices is not supported by this script.")
             print("Please launch the app manually on the device.")
 
