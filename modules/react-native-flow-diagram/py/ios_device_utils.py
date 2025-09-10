@@ -39,7 +39,7 @@ def validate_ios():
             if _booted_sim_count == 1:
                 total_targets = 1
                 _is_simulator_target = True
-                is_real_ios_device_target = True
+                is_real_ios_device_target = False
                 _udid = _get_booted_simulator_udid()
 
 
