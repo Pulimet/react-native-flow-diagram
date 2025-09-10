@@ -4,11 +4,15 @@ A React Native logging utility that enables enhanced, structured logging. It inc
 to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze
 app behavior and processes.
 
-# What you got
+# Output Demonstration
 
 ....
 
 # How to use
+## How to send log events
+### RN
+### Android
+### iOS
 
 .....
 
@@ -73,11 +77,6 @@ app behavior and processes.
         }
     }    
     ```
-
-# How to add log events
-### RN
-### Android
-### iOS
 
 # Measurements
 
