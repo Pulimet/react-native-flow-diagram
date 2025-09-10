@@ -22,7 +22,7 @@ REQ = "REQ"
 RSP = "RSP"
 
 def parse_logs(logcat_output, log_tag):
-    print("Parsing the logcat output...")
+    print(f"Parsing the logcat output... (log tag: {log_tag})")
     print("LogCat Output length: ", len(logcat_output))
     parsed_data = []
 
@@ -36,6 +36,7 @@ def parse_logs(logcat_output, log_tag):
 
         # Remove all before log_tag including tag itself
         line = line[line.find(log_tag) + len(log_tag) + 2:]
+        print(line)
         time_since_start = int(line[:10].replace(" ", ""))
 
         line = line[line.find(ARROW) + 3:]

@@ -39,7 +39,8 @@ public class FlowDiagramUtil: NSObject {
     
     private static var messageCounter = [String: Int]() // Message and its counter
     private static let logMsChars = 9
-    private static let osLog = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "com.flowdiagram", category: "FlowDiagram")
+    // private static let osLog = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "com.flowdiagram", category: "FlowDiagram")
+    private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FlowDiagram")
 
     public static func onAppLaunched(_ logsEnabled: Bool = false) {
         appLaunchTime = Date()
@@ -121,7 +122,8 @@ public class FlowDiagramUtil: NSObject {
     }
     
     private static func log(msg: String) {
-        os_log("%{public}@", log: osLog, type: .info, msg)
+        //os_log("%{public}@", log: osLog, type: .error, msg)
+        logger.warning("\(msg, privacy: .public)")
     }
     
     private static func currentMillis() -> Int64 {

@@ -35,13 +35,13 @@ class IOSLogCollector:
                 "--debug", "--predicate", predicate
             ]
         else:  # is_real_device
-            command = [
-                "xcrun", "log", "stream",
-                "--style", "stdio", "--predicate", predicate
-            ]
+            # xcrun log stream --level info --style default --predicate 'process == "FlowDiagram'
+            # idevicesyslog -m "FlowDiagram(FlowDiagram.debug"
+            command = ["idevicesyslog", "-m", "FlowDiagram.debug.dylib"]
+
 
         print("Starting iOS log capture...")
-        print(f"Running log command: {' '.join(command)}")
+        print(f">>> Executing command: {' '.join(command)}")
 
         self._log_process = subprocess.Popen(
             command,
@@ -98,4 +98,7 @@ class IOSLogCollector:
             print("-----------------------------------\n")
             return []
 
+        print("\n--- iOS Log Capture STDOUT ---")
+        print(stdout.strip())
+        print("-----------------------------")
         return stdout.splitlines()

@@ -1,6 +1,7 @@
 import time
+import ios_device_utils
 
-from config import LAUNCH_COUNT, WAIT_TIME, ANDROID_LOG_TAG, IOS_LOG_TAG
+from config import LAUNCH_COUNT, WAIT_TIME, ANDROID_LOG_TAG, IOS_LOG_EMU_TAG, IOS_LOG_REAL_TAG
 from device_utils import close_app, launch_app, clear_logs, capture_logs_android, start_capturing_ios_logs, stop_capturing_ios_logs
 from parsing_utils import parse_logs
 
@@ -35,7 +36,10 @@ def launch_and_collect_data():
     ios_logs = stop_capturing_ios_logs()
     parsed_ios_logs = None
     if ios_logs:
-        parsed_ios_logs = parse_logs(ios_logs, IOS_LOG_TAG)
+        log_tag = IOS_LOG_EMU_TAG
+        if ios_device_utils.is_real_ios_device_target:
+            log_tag = IOS_LOG_REAL_TAG
+        parsed_ios_logs = parse_logs(ios_logs, log_tag)
 
     # Android
     android_logs = capture_logs_android()

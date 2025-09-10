@@ -13,18 +13,26 @@ if __name__ == "__main__":
     if not is_android_passed and not is_ios_passed:
         print("Validation failed for all enabled platforms. Exiting.")
         exit(1)
+    print("----------------------- VALIDATION PASSED -> START PREPARE STAGE----------------------- ")
+
 
     # Prepare
     prevent_screen_lock(True)
     close_app()
     compile_package()
+    print("----------------------- PREPARE STAGE PASSED -> START MEASUREMENT STAGE ----------------------- ")
 
     # Launch and measure
     all_android_data, all_ios_data = start_measurements()
 
+    print("----------------------- MEASUREMENT STAGE PASSED -> START CLEAN STAGE ----------------------- ")
+
     # Clean
     prevent_screen_lock(False)
     close_app()
+
+    print("----------------------- CLEAN STAGE PASSED -> START CALC & CREATE OUTPUT STAGE ----------------------- ")
+
 
     create_folders()
 

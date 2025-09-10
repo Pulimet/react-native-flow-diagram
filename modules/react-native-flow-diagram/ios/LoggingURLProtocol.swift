@@ -16,7 +16,7 @@ class LoggingURLProtocol: URLProtocol {
         let urlString = url.absoluteString
 
         // Filter out URLs we don't want to handle
-        if urlString.contains("autoproxy") || urlString.contains("localhost") {
+        if urlString.contains("autoproxy") || urlString.contains("localhost") || urlString.contains("192.168.1") {
             return false
         }
 

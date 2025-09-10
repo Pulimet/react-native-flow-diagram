@@ -1,9 +1,10 @@
 import subprocess
+import shlex
 import re
 import os
 from ios_log_collector import IOSLogCollector
 
-from config import BUNDLE_ID
+from config import BUNDLE_ID, IS_FORCE_EMULATOR
 
 REQUIRED_DEVICES = 1
 
@@ -12,25 +13,36 @@ REQUIRED_DEVICES = 1
 _real_device_count = 0
 _booted_sim_count = 0
 _is_simulator_target = False
-_is_real_device_target = False
+is_real_ios_device_target = False
 _log_collector = None
-_uuid = None
+_udid = None
 
 def validate_ios():
     """Validates that exactly one iOS device or simulator is ready."""
     try:
-        global _real_device_count, _booted_sim_count, _is_simulator_target, _is_real_device_target, _uuid
+        global _real_device_count, _booted_sim_count, _is_simulator_target, is_real_ios_device_target, _udid
         _real_device_count = _get_real_device_count()
         _booted_sim_count = _get_booted_simulator_count()
         _is_simulator_target = (_booted_sim_count == 1 and _real_device_count == 0)
-        _is_real_device_target = (_real_device_count == 1 and _booted_sim_count == 0)
+        is_real_ios_device_target = (_real_device_count == 1 and _booted_sim_count == 0)
         if _is_simulator_target:
-            _uuid = _get_booted_simulator_udid()
+            _udid = _get_booted_simulator_udid()
+        if is_real_ios_device_target:
+            _udid = _get_real_device_udid()
 
-        print(f"real_device_count: {_real_device_count}")
-        print(f"booted_sim_count: {_booted_sim_count}")
+        print(f"real_device_count: {_real_device_count} / booted_sim_count: {_booted_sim_count} / _udid: {_udid}")
 
         total_targets = _real_device_count + _booted_sim_count
+
+        # Special case when there is real device connected
+        if IS_FORCE_EMULATOR:
+            if _booted_sim_count == 1:
+                total_targets = 1
+                _is_simulator_target = True
+                is_real_ios_device_target = True
+                _udid = _get_booted_simulator_udid()
+
+
         if total_targets == REQUIRED_DEVICES:
             print(f"Validation passed: Found {total_targets} iOS target (device/simulator).")
             return True
@@ -97,6 +109,38 @@ def _get_booted_simulator_udid():
                 return match.group(1)
     return None
 
+def _get_real_device_udid():
+    """Gets the UDID of the single connected physical iOS device."""
+    try:
+        # Using `xcrun xctrace` is more reliable for getting real device UDIDs.
+        devices_output = subprocess.check_output(
+            ["xcrun", "xctrace", "list", "devices"], text=True, stderr=subprocess.PIPE
+        )
+        lines = devices_output.splitlines()
+        in_devices_section = False
+        for line in lines:
+            if line.strip().startswith("==") and not line.strip() == "== Devices ==":
+                in_devices_section = False
+            if line.startswith("== Devices =="):
+                in_devices_section = True
+                continue # Skip the header line itself
+
+            # A real, connected device has an OS version like (18.6.2) in its line.
+            # This check only runs when device_section is True.
+            if in_devices_section and re.search(r'\([\d.]+\)', line):
+                match = re.search(r'\(([0-9A-F-]+)\)$', line.strip())
+                if match:
+                    udid = match.group(1)
+                    # Basic validation to ensure it's not just the OS version like '(17.5.1)'
+                    if '-' in udid or len(udid) > 10:
+                        return udid
+
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # This can happen if Xcode command-line tools are not installed or the command fails.
+        return None
+
+    return None
+
 def prevent_ios_screen_lock(enable=True):
     """
     Prevents the screen from locking on a booted iOS simulator.
@@ -107,12 +151,12 @@ def prevent_ios_screen_lock(enable=True):
             action_str = "Disabling" if enable else "Enabling"
             print(f"{action_str} screen auto-lock on the iOS simulator...")
 
-            if not _uuid:
+            if not _udid:
                 print("ERROR: Could not find the UDID of the booted simulator.")
                 return
 
             # Construct the path to the springboard preferences file.
-            plist_path = os.path.expanduser(f"~/Library/Developer/CoreSimulator/Devices/{_uuid}/data/Library/Preferences/com.apple.springboard.plist")
+            plist_path = os.path.expanduser(f"~/Library/Developer/CoreSimulator/Devices/{_udid}/data/Library/Preferences/com.apple.springboard.plist")
 
             # Ensure the directory for the plist file exists, as it might not on a fresh simulator.
             os.makedirs(os.path.dirname(plist_path), exist_ok=True)
@@ -148,8 +192,8 @@ def prevent_ios_screen_lock(enable=True):
             subprocess.run(["xcrun", "simctl", "terminate", "booted", springboard_bundle_id],
                            capture_output=True)
 
-        elif _is_real_device_target:
-            print("INFO: Screen lock settings cannot be changed on physical iOS devices via the command line due to security restrictions.")
+        # elif is_real_ios_device_target:
+        #     print("INFO: Screen lock settings cannot be changed on physical iOS devices via the command line due to security restrictions.")
 
         elif _booted_sim_count + _real_device_count > 1:
             print("INFO: Multiple simulators/devices are running. Screen lock setting was not changed.")
@@ -164,9 +208,62 @@ def prevent_ios_screen_lock(enable=True):
     except FileNotFoundError as e:
         print(f"ERROR: Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
 
+def get_pid():
+    # print("INFO: Getting PID...")
+    # Get PID
+    # xcrun devicectl device info processes --device 00008101-00094D162142001E | grep -i flowdiagram
+    # xcrun devicectl device info processes --device 00008101-00094D162142001E | grep -i flowdiagram | awk '{print $1}'
+
+    # 1. Command to get all processes from the device
+    command1_str = f"xcrun devicectl device info processes --device {_udid}"
+
+    # 2. Command to filter for 'flowdiagram'
+    command2_str = "grep -i flowdiagram"
+
+    # 3. Command to extract the first column (the PID)
+    command3_str = "awk '{print $1}'"
+
+    try:
+        # Execute the first command
+        # print(">>> Executing command: " + command1_str)
+        process1 = subprocess.Popen(shlex.split(command1_str), stdout=subprocess.PIPE)
+
+        # Pipe the output of the first command to the second command (grep)
+        # print(">>> Executing command: " + command2_str)
+        process2 = subprocess.Popen(shlex.split(command2_str), stdin=process1.stdout, stdout=subprocess.PIPE)
+
+        # Allow process1 to receive a SIGPIPE if process2 exits before it
+        if process1.stdout:
+            process1.stdout.close()
+
+        # Pipe the output of the second command to the third command (awk)
+        # print(">>> Executing command: " + command3_str)
+        process3 = subprocess.Popen(shlex.split(command3_str), stdin=process2.stdout, stdout=subprocess.PIPE)
+
+        # Allow process2 to receive a SIGPIPE if process3 exits before it
+        if process2.stdout:
+            process2.stdout.close()
+
+        # Get the final output and decode it from bytes to string
+        output, error = process3.communicate()
+
+        if error:
+            print(f"Error: {error.decode('utf-8').strip()}")
+            return ""
+        pid = output.decode('utf-8').strip()
+        # print(f"PID: {pid}")
+        return pid
+
+    except FileNotFoundError:
+        print("Error: 'xcrun' could not be found. Please ensure Xcode Command Line Tools are installed.")
+        return ""
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return ""
+
 def close_ios_app():
     """Closes the app on the connected iOS device or booted simulator."""
-    print(f"Closing app with bundle ID: {BUNDLE_ID}...")
+    print(f"Closing app with bundle ID: {BUNDLE_ID} and UDID: {_udid} ....")
 
     try:
         if _is_simulator_target:
@@ -179,10 +276,25 @@ def close_ios_app():
                 # simctl terminate exits with a non-zero code if the app wasn't running, which is fine.
                 print("App was not running on the simulator or could not be terminated.")
 
-        elif _is_real_device_target:
-            # TODO idb terminate --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
-            print("INFO: Closing apps on physical devices is not supported by this script due to command-line limitations.")
-            print("Please close the app manually on the device.")
+        elif is_real_ios_device_target:
+            pid = get_pid()
+            if pid == "":
+                print("ERROR: Could not find the PID of the device. Can't close the app on the device.")
+                return
+
+            # Close:
+            # xcrun devicectl device process terminate --device 00008101-00094D162142001E --pid 1091
+
+            command = ["xcrun", "devicectl", "device", "process", "terminate", "--device", _udid, "--pid", pid]
+            # Print command
+            print(f">>> Executing command:  {' '.join(command)}")
+            result = subprocess.run(command, capture_output=True, text=True)
+            # if result.returncode == 0:
+            #     print("Successfully sent terminate signal to the app on the device.")
+            # else:
+            #     print("App was not running on the device or could not be terminated.")
+            # if result.stdout:
+            #     print(f"Output: {result.stdout}")
 
         elif _get_booted_simulator_count() > 1 or _get_real_device_count() > 1:
             print("INFO: Multiple devices/simulators found. No action taken.")
@@ -190,10 +302,11 @@ def close_ios_app():
         else:
             print("INFO: No single iOS simulator or device found. No action taken.")
 
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        print("ERROR: A command failed while trying to close the app.")
-        if isinstance(e, FileNotFoundError):
-            print(f"Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to terminate app with bundle ID: {BUNDLE_ID}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
 
 def launch_ios_app():
     """Launches the app on the booted simulator."""
@@ -203,12 +316,20 @@ def launch_ios_app():
         if _is_simulator_target:
             command = ["xcrun", "simctl", "launch", "booted", BUNDLE_ID]
             subprocess.run(command, check=True, capture_output=True, text=True)
-            print(f"Successfully launched app with bundle ID: {BUNDLE_ID} on the simulator.")
+            # print(f"Successfully launched app with bundle ID: {BUNDLE_ID} on the simulator.")
 
-        elif _is_real_device_target:
-            # TODO idb launch --udid B1F3407F-3831-4EBD-B86A-2E428586E7D4 org.reactjs.native.example.FlowDiagram
-            print("INFO: Launching apps on physical devices is not supported by this script.")
-            print("Please launch the app manually on the device.")
+        elif is_real_ios_device_target:
+            # Launch
+            # xcrun devicectl device process launch --device 00008101-00094D162142001E org.reactjs.native.example.FlowDiagram
+            command = ["xcrun", "devicectl", "device", "process", "launch", "--device", _udid, BUNDLE_ID]
+            print(f">>> Executing command:  {' '.join(command)}")
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            # if result.returncode == 0:
+            #     print("Successfully sent launch signal to the app on the device.")
+            # else:
+            #     print("Failed to send launch signal to the app on the device")
+            # if result.stdout:
+            #     print(f"Output: {result.stdout}")
 
         elif _get_booted_simulator_count() > 1 or _get_real_device_count() > 1:
             print("INFO: Multiple devices/simulators found. No action taken.")
@@ -229,7 +350,7 @@ def start_ios_log_capture():
     global _log_collector
     if not _log_collector:
         _log_collector = IOSLogCollector()
-    _log_collector.start(is_simulator=_is_simulator_target, is_real_device=_is_real_device_target)
+    _log_collector.start(is_simulator=_is_simulator_target, is_real_device=is_real_ios_device_target)
 
 def stop_ios_log_capture():
     """
