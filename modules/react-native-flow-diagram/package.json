@@ -1,19 +1,43 @@
 {
   "name": "react-native-flow-diagram",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A React Native logging utility that enables enhanced, structured logging. It includes built-in support for parsing logs to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze app behavior and processes.",
+  "keywords": [
+    "react-native",
+    "flow",
+    "diagram",
+    "log",
+    "logging",
+    "workflow",
+    "visualize",
+    "debug",
+    "flowchart",
+    "android",
+    "ios"
+  ],
   "main": "src/index",
   "codegenConfig": {
     "name": "FlowDiagramSpec",
     "type": "modules",
     "jsSrcsDir": "src"
   },
-  "author": " <> ()",
-  "license": "UNLICENSED",
-  "homepage": "#readme",
-  "create-react-native-library": {
-    "languages": "kotlin-objc",
-    "type": "turbo-module",
-    "version": "0.53.0"
-  }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pulimet/react-native-flow-diagram.git"
+  },
+  "author": "Alexey Korolev <korolev2009@gmail.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/Pulimet/react-native-flow-diagram/issues"
+  },
+  "homepage": "https://github.com/Pulimet/react-native-flow-diagram#readme",
+  "files": [
+    "android",
+    "ios",
+    "py",
+    "src",
+    "FlowDiagramModule.podspec",
+    "README.md"
+  ]
 }
