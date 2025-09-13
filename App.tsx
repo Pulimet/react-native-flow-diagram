@@ -49,7 +49,6 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
-  // MainActivity.onCreate -> Start - (Sync Native Example)
   logSync('App.tsx -> Render (Sync RN Example)');
   const isDarkMode = useColorScheme() === 'dark';
 
