@@ -24,8 +24,7 @@ class MainApplication : Application(), ReactApplication {
         LogTime.logSync("MainApplication.onCreate -> Start - (Sync Native Example)")
         super.onCreate()
         setupOkHttpClient()
-        SoLoader.init(this, OpenSourceMergedSoMapping)
-        load()
+        initRN()
         LogTime.logSync("MainApplication.onCreate -> End - Sync NativeExample - (Sync Native Example)")
     }
 
@@ -39,6 +38,11 @@ class MainApplication : Application(), ReactApplication {
             okHttpClient
         }
         LogTime.logSync("MainApplication.setupOkHttpClient -> Done - (Sync Native Example)")
+    }
+
+    private fun initRN() {
+        SoLoader.init(this, OpenSourceMergedSoMapping)
+        load()
     }
 
     // React Native Setup

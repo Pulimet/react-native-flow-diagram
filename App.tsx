@@ -58,30 +58,30 @@ function App(): React.JSX.Element {
 
   const safePadding = '5%';
 
-  useEffect(() => {
-    logSync('Sync test', LogLevel.DEBUG);
-    logAsync('Async test', LogLevel.INFO);
-
-    logAsync('Making network call...', LogLevel.INFO);
-    fetch('https://jsonplaceholder.typicode.com/todos/1')
-      .then(response => {
-        if (!response.ok) {
-          // Throw an error to be caught by the .catch block
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(json => {
-        logAsync('Network call successful', LogLevel.INFO);
-        console.log('Fetched data:', json);
-      })
-      .catch(error => {
-        const errorMessage =
-          error instanceof Error ? error.message : 'An unknown error occurred';
-        logAsync(`Network call failed: ${errorMessage}`, LogLevel.DEBUG);
-        console.error('There was a problem with the fetch operation:', error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   // logSync('Sync test', LogLevel.DEBUG);
+  //   // logAsync('Async test', LogLevel.INFO);
+  //
+  //   // logAsync('Making network call...', LogLevel.INFO);
+  //   fetch('https://jsonplaceholder.typicode.com/todos/1')
+  //     .then(response => {
+  //       if (!response.ok) {
+  //         // Throw an error to be caught by the .catch block
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       return response.json();
+  //     })
+  //     .then(json => {
+  //       // logAsync('Network call successful', LogLevel.INFO);
+  //       console.log('Fetched data:', json);
+  //     })
+  //     .catch(error => {
+  //       const errorMessage =
+  //         error instanceof Error ? error.message : 'An unknown error occurred';
+  //       // logAsync(`Network call failed: ${errorMessage}`, LogLevel.DEBUG);
+  //       console.error('There was a problem with the fetch operation:', error);
+  //     });
+  // }, []);
 
   return (
     <View style={backgroundStyle}>

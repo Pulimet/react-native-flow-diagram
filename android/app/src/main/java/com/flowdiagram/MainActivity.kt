@@ -14,8 +14,15 @@ import okhttp3.Request
 import okhttp3.Response
 import java.io.IOException
 import com.facebook.react.modules.network.OkHttpClientProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
-class MainActivity : ReactActivity() {
+
+class MainActivity : ReactActivity(), CoroutineScope {
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
 
     override fun getMainComponentName(): String = "FlowDiagram"
 
@@ -27,6 +34,8 @@ class MainActivity : ReactActivity() {
         LogTime.onIntent(intent)
         LogTime.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
         makeNetworkRequest()
+        initAsyncLibrary()
+        initSyncLibrary()
         LogTime.logSync("MainActivity.onCreate -> End - (Sync Native Example)")
     }
 
@@ -45,5 +54,19 @@ class MainActivity : ReactActivity() {
                 response.body?.close()
             }
         })
+    }
+
+    private fun initAsyncLibrary() {
+        launch {
+            LogTime.logAsync("MainActivity.initAsyncLibrary -> Start - (Async Native Example)")
+            delay(2000)
+            LogTime.logAsync("MainActivity.initAsyncLibrary -> End - (Async Native Example)")
+        }
+    }
+
+    private fun initSyncLibrary() {
+        LogTime.logSync("MainActivity.initSyncLibrary -> Start - (Sync Native Example)")
+        Thread.sleep(500)
+        LogTime.logSync("MainActivity.initSyncLibrary -> End - (Sync Native Example)")
     }
 }
