@@ -9,19 +9,39 @@ app behavior and processes.
 <img width="100%" alt="Table with all logs" src="https://github.com/user-attachments/assets/09545e63-e44f-4e85-9012-c54eb7784035" />
 <img width="512" height="174" alt="Table wit network requests/responses" src="https://github.com/user-attachments/assets/685193b1-fcdd-4a10-b3f4-94795a294435" />
 
-# How to use
 ## How to send log events
+Network requests from native and RN logged automatically.
+
 ### RN
+```typescript
+import {logAsync, logSync} from 'react-native-flow-diagram';
+logSync('App.tsx -> Start (Sync RN Example)');
+logAsync('App.tsx -> Network call successful (Async RN Example)');
+```
+
 ### Android
+```kotlin
+// import net.alexandroid.flowdiagram.LogTime
+LogTime.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
+LogTime.logAsync("MainActivity.makeNetworkRequest -> onResponse - (Async Native Example)")
+```
+
 ### iOS
+```groovy
+FlowDiagramUtil.logSync(message: "AppDelegate.didFinishLaunchingWithOptions (Sync Native Example)")
+FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network call successful(Sync Native Example)")
+```
 
-.....
 
-# Setup 
 
+# Installation -> Adding to your project
 ## Android
 
-1. Add to settings.gradle
+1. Install npm package
+    ```shell
+    npm i react-native-flow-diagram
+    ```
+2. Add to settings.gradle
     ```groovy
     include ':react-native-flow-diagram'
     project(':react-native-flow-diagram').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-flow-diagram/android')
@@ -48,14 +68,14 @@ app behavior and processes.
             .cookieJar(ReactCookieJarContainer())
             .addInterceptor(LogTime.loggingInterceptor)
             .build()
-
+        
         OkHttpClientProvider.setOkHttpClientFactory {
             okHttpClient
         }
     }
    ```
 
-5. MainActivity -> onCreate()
+5. MainActivity -> onCreate() (Optional: Support special launch mode)
     ```kotlin
     class RNMainActivity : ReactActivity() {
         public override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +88,7 @@ app behavior and processes.
 ## iOS
 
 1. Add to AppDelegate.swift
-    ```
+    ```groovy
     import FlowDiagramModule
     
     class AppDelegate: RCTAppDelegate {
@@ -79,5 +99,30 @@ app behavior and processes.
     }    
     ```
 
-# Measurements
+
+# Installation -> How to run sample project
+```shell
+    npm install
+```
+```shell
+    cd ios
+```
+```shell
+    pod install
+```
+
+Open xCode/Android Studio and launch.
+
+# Launch Measurements
+
+## Script configuration
+
+### Android
+
+### iOS Simulator
+
+### iOS Real Device
+
+## Launch 
+
 
