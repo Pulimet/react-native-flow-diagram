@@ -113,7 +113,7 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
 
 Open xCode/Android Studio and launch.
 
-# Launch Measurements
+# Launch Measurements ([Working on...])
 
 ## Script configuration
 
