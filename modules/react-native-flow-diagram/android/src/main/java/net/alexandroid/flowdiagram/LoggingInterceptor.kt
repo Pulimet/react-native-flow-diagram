@@ -23,7 +23,12 @@ class LoggingInterceptor : Interceptor {
         responseCode: Int = 0,
         elapsedTime: Long = 0
     ) {
-        if (!requestUrl.contains("symbolicate") && !requestUrl.contains("localhost")) {
+        if (
+            !requestUrl.contains("symbolicate")
+            && !requestUrl.contains("localhost")
+            && !requestUrl.contains("10.0")
+            && !requestUrl.contains("192.168")
+        ) {
             LogTime.logNetwork(requestUrl, logType, responseCode, elapsedTime)
         }
     }

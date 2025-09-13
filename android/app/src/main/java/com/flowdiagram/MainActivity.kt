@@ -25,9 +25,9 @@ class MainActivity : ReactActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LogTime.onIntent(intent)
-        LogTime.logSync("MainActivity.onCreate")
-        LogTime.logAsync("MainActivity.onCreate -> Async Example", logLevel = LogLevel.INFO)
+        LogTime.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
         makeNetworkRequest()
+        LogTime.logSync("MainActivity.onCreate -> End - (Sync Native Example)")
     }
 
     private fun makeNetworkRequest() {
@@ -37,11 +37,11 @@ class MainActivity : ReactActivity() {
         val okHttpClient = OkHttpClientProvider.getOkHttpClient()
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                LogTime.logAsync("Network call failed: ${e.message}", logLevel = LogLevel.DEBUG)
+                LogTime.logAsync("MainActivity.makeNetworkRequest -> onFailure - (Async Native Example)")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                LogTime.logAsync("Network call successful: ${response.code}", logLevel = LogLevel.INFO)
+                LogTime.logAsync("MainActivity.makeNetworkRequest -> onResponse - (Async Native Example)")
                 response.body?.close()
             }
         })

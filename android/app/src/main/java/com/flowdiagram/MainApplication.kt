@@ -19,6 +19,29 @@ import com.facebook.react.modules.network.ReactCookieJarContainer
 
 class MainApplication : Application(), ReactApplication {
 
+    override fun onCreate() {
+        LogTime.onApplicationOnCreate(true)
+        LogTime.logSync("MainApplication.onCreate -> Start - (Sync Native Example)")
+        super.onCreate()
+        setupOkHttpClient()
+        SoLoader.init(this, OpenSourceMergedSoMapping)
+        load()
+        LogTime.logSync("MainApplication.onCreate -> End - Sync NativeExample - (Sync Native Example)")
+    }
+
+    private fun setupOkHttpClient() {
+        val okHttpClient = OkHttpClient.Builder()
+            .cookieJar(ReactCookieJarContainer())
+            .addInterceptor(LogTime.loggingInterceptor)
+            .build()
+
+        OkHttpClientProvider.setOkHttpClientFactory {
+            okHttpClient
+        }
+        LogTime.logSync("MainApplication.setupOkHttpClient -> Done - (Sync Native Example)")
+    }
+
+    // React Native Setup
     override val reactNativeHost: ReactNativeHost =
         object : DefaultReactNativeHost(this) {
             override fun getPackages(): List<ReactPackage> =
@@ -37,23 +60,4 @@ class MainApplication : Application(), ReactApplication {
 
     override val reactHost: ReactHost
         get() = getDefaultReactHost(applicationContext, reactNativeHost)
-
-    override fun onCreate() {
-        LogTime.onApplicationOnCreate(true)
-        super.onCreate()
-        setupOkHttpClient()
-        SoLoader.init(this, OpenSourceMergedSoMapping)
-        load()
-    }
-
-    private fun setupOkHttpClient() {
-        val okHttpClient = OkHttpClient.Builder()
-            .cookieJar(ReactCookieJarContainer())
-            .addInterceptor(LogTime.loggingInterceptor)
-            .build()
-
-        OkHttpClientProvider.setOkHttpClientFactory {
-            okHttpClient
-        }
-    }
 }
