@@ -50,6 +50,8 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+  // MainActivity.onCreate -> Start - (Sync Native Example)
+  logSync('App.tsx -> Render (Sync RN Example)');
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -58,30 +60,56 @@ function App(): React.JSX.Element {
 
   const safePadding = '5%';
 
-  // useEffect(() => {
-  //   // logSync('Sync test', LogLevel.DEBUG);
-  //   // logAsync('Async test', LogLevel.INFO);
-  //
-  //   // logAsync('Making network call...', LogLevel.INFO);
-  //   fetch('https://jsonplaceholder.typicode.com/todos/1')
-  //     .then(response => {
-  //       if (!response.ok) {
-  //         // Throw an error to be caught by the .catch block
-  //         throw new Error(`HTTP error! Status: ${response.status}`);
-  //       }
-  //       return response.json();
-  //     })
-  //     .then(json => {
-  //       // logAsync('Network call successful', LogLevel.INFO);
-  //       console.log('Fetched data:', json);
-  //     })
-  //     .catch(error => {
-  //       const errorMessage =
-  //         error instanceof Error ? error.message : 'An unknown error occurred';
-  //       // logAsync(`Network call failed: ${errorMessage}`, LogLevel.DEBUG);
-  //       console.error('There was a problem with the fetch operation:', error);
-  //     });
-  // }, []);
+  useEffect(() => {
+    logSync('App.tsx -> useEffect - Start (Sync RN Example)');
+    makeNetworkRequest()
+    initAsyncLibrary()
+    initSyncLibrary()
+    logSync('App.tsx -> useEffect - End (Sync RN Example)');
+  }, []);
+
+  const makeNetworkRequest = () => {
+    fetch('https://jsonplaceholder.typicode.com/todos/1')
+      .then(response => {
+        if (!response.ok) {
+          // Throw an error to be caught by the .catch block
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(json => {
+        logAsync('App.tsx -> makeNetworkRequest - Network call successful (Async RN Example)');
+        console.log('Fetched data:', json);
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+  }
+
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const initAsyncLibrary = async (): Promise<void> => {
+    logAsync("App.tsx -> initAsyncLibrary -> Start - (Async RN Example)");
+
+    // 'await' pauses this function's execution for 2 seconds without blocking
+    // the main JavaScript thread, allowing the UI to remain responsive.
+    await delay(2000);
+
+    logAsync("App.tsx -> initAsyncLibrary -> End - (Async RN Example)");
+  };
+
+  const initSyncLibrary = (): void => {
+    logSync("App.tsx -> initSyncLibrary -> Start - (Sync RN Example)");
+
+    // WARNING: This is a blocking operation that will freeze the UI.
+    // It's a "busy-wait" loop that consumes 100% CPU on its thread
+    // until the time has passed. Avoid this in real applications.
+    const start = Date.now();
+    while (Date.now() - start < 500) {
+      // This loop blocks the entire JavaScript thread.
+    }
+    logSync("App.tsx -> initSyncLibrary -> End - (Sync RN Example)");
+  };
 
   return (
     <View style={backgroundStyle}>

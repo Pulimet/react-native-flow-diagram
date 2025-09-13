@@ -15,7 +15,7 @@ from datetime import datetime
 # Global Config
 IS_ANDROID_ENABLED = False
 IS_IOS_ENABLED = True
-IS_FORCE_EMULATOR = False
+IS_FORCE_EMULATOR = True
 
 # App config
 # You can find this in Xcode under Target > General > Identity > Bundle Identifier.
