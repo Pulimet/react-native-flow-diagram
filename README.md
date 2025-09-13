@@ -5,8 +5,9 @@ to extract workflow steps and visualize them as interactive flow diagrams, helpi
 app behavior and processes.
 
 # Output Demonstration
-
-....
+<img width="100%" alt="Flow Diagram Example" src="https://github.com/user-attachments/assets/f8b9a901-1c85-4bc3-b13d-376d8c1cf1ce" />
+<img width="100%" alt="Table with all logs" src="https://github.com/user-attachments/assets/09545e63-e44f-4e85-9012-c54eb7784035" />
+<img width="512" height="174" alt="Table wit network requests/responses" src="https://github.com/user-attachments/assets/685193b1-fcdd-4a10-b3f4-94795a294435" />
 
 # How to use
 ## How to send log events
