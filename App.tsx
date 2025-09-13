@@ -17,7 +17,6 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {LogLevel} from 'react-native-flow-diagram/src/NativeFlowDiagram.ts';
 
 type SectionProps = PropsWithChildren<{
   title: string;
