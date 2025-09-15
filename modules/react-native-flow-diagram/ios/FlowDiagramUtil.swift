@@ -36,24 +36,23 @@ public class FlowDiagramUtil: NSObject {
         }
         return Int64(appLaunchTime.timeIntervalSince1970 * 1000)
     }
-    
+
     private static var messageCounter = [String: Int]() // Message and its counter
     private static let logMsChars = 9
-    // private static let osLog = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "com.flowdiagram", category: "FlowDiagram")
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "FlowDiagram")
 
     public static func onAppLaunched(_ logsEnabled: Bool = false) {
         appLaunchTime = Date()
         isLogEnabled = logsEnabled
         print("App has launched - onAppLaunched called in Swift")
-        
+
         if(!isLogEnabled) {
             return
         }
-        
+
         // Register our custom URLProtocol (Catch native)
         URLProtocol.registerClass(LoggingURLProtocol.self)
-        
+
         // Catch RN network calls
         RCTSetCustomNSURLSessionConfigurationProvider {
             let config = URLSessionConfiguration.default
@@ -63,7 +62,7 @@ public class FlowDiagramUtil: NSObject {
             return config
         }
     }
-    
+
     public static func logNetwork(
         _ requestUrl: String,
         logType: LogType,
@@ -94,7 +93,7 @@ public class FlowDiagramUtil: NSObject {
         let messageWithSuffix = addSuffixToMessage("[NET][RSP] \(message)")
         log(msg: "\(sinceCreated()) => \(messageWithSuffix), Status: \(responseCode), Elapsed time: \(elapsedTime)")
     }
-    
+
     @objc
     public static func logSync(
         message: String,
@@ -107,7 +106,7 @@ public class FlowDiagramUtil: NSObject {
             log(msg: "\(sinceCreated()) => [\(type)][\(logLevel.description)][SYNC] \(messageWithSuffix)")
         }
     }
-    
+
     @objc
     public static func logAsync(
         message: String,
@@ -120,22 +119,21 @@ public class FlowDiagramUtil: NSObject {
             log(msg: "\(sinceCreated()) => [\(type)][\(logLevel.description)][ASYNC] \(messageWithSuffix)")
         }
     }
-    
+
     private static func log(msg: String) {
-        //os_log("%{public}@", log: osLog, type: .error, msg)
         logger.warning("\(msg, privacy: .public)")
     }
-    
+
     private static func currentMillis() -> Int64 {
         return Int64(Date().timeIntervalSince1970 * 1000)
     }
-    
+
     private static func sinceCreated() -> String {
         let elapsed = currentMillis() - appLaunchTimeMs
         let formatted = formatChunksOfThree(elapsed)
         return addSpaces(time: formatted, spacesNum: logMsChars)
     }
-    
+
     private static func formatChunksOfThree(_ input: Int64) -> String {
         let inputStr = String(input)
         if input < 1000 {
@@ -156,7 +154,7 @@ public class FlowDiagramUtil: NSObject {
         let spaced = chunks.joined(separator: " ")
         return String(spaced.reversed())
     }
-    
+
     private static func addSpaces(time: String, spacesNum: Int = logMsChars) -> String {
         var text = time
         let spaces = spacesNum - text.count
@@ -165,7 +163,7 @@ public class FlowDiagramUtil: NSObject {
         }
         return text
     }
-    
+
     private static func addSuffixToMessage(_ message: String) -> String {
         let counter = messageCounter[message] ?? 0
         if counter > 0 {
@@ -176,7 +174,7 @@ public class FlowDiagramUtil: NSObject {
             return message
         }
     }
-    
+
     // For Objective-C use:
     @objc public static func logSyncObjC(message: String, logType: Int, logLevel: Double) {
         let level = logLevel == 0.0 ? 0 : 1
