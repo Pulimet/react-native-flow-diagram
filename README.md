@@ -4,6 +4,13 @@ A React Native logging utility that enables enhanced, structured logging. It inc
 to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze
 app behavior and processes.
 
+### Event Reporting Flow
+<img width="555" height="158" alt="image" src="https://github.com/user-attachments/assets/114e4c11-5d09-4c0c-be27-0574e36bcbc6" />
+
+### Measurement Script Flow
+<img width="1065" height="263" alt="image" src="https://github.com/user-attachments/assets/cae833fa-9ea3-417a-ab2c-85be67bca898" />
+
+
 # Output Demonstration
 <img width="100%" alt="Flow Diagram Example" src="https://github.com/user-attachments/assets/f8b9a901-1c85-4bc3-b13d-376d8c1cf1ce" />
 <img width="100%" alt="Table with all logs" src="https://github.com/user-attachments/assets/09545e63-e44f-4e85-9012-c54eb7784035" />
