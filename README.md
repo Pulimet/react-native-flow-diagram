@@ -33,15 +33,16 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
 ```
 
 
-
 # Installation -> Adding to your project
-## Android
+## React Native
 
 1. Install npm package
     ```shell
     npm i react-native-flow-diagram
     ```
-2. Add to settings.gradle
+
+## Android  
+1. Add to settings.gradle
     ```groovy
     include ':react-native-flow-diagram'
     project(':react-native-flow-diagram').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-flow-diagram/android')
