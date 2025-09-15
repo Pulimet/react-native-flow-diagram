@@ -8,7 +8,7 @@ app behavior and processes.
 <img width="555" height="158" alt="image" src="https://github.com/user-attachments/assets/114e4c11-5d09-4c0c-be27-0574e36bcbc6" />
 
 ### Measurement Script Flow
-<img width="1065" height="263" alt="image" src="https://github.com/user-attachments/assets/cae833fa-9ea3-417a-ab2c-85be67bca898" />
+<img width="1037" height="272" alt="image" src="https://github.com/user-attachments/assets/dfb4ffb9-2921-47aa-ab39-231f3fd8e0ee" />
 
 
 # Output Demonstration
