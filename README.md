@@ -15,9 +15,11 @@ app behavior and processes.
 <img width="100%" alt="Flow Diagram Example" src="https://github.com/user-attachments/assets/f8b9a901-1c85-4bc3-b13d-376d8c1cf1ce" />
 <img width="100%" alt="Table with all logs" src="https://github.com/user-attachments/assets/09545e63-e44f-4e85-9012-c54eb7784035" />
 <img width="512" height="174" alt="Table wit network requests/responses" src="https://github.com/user-attachments/assets/685193b1-fcdd-4a10-b3f4-94795a294435" />
+<img width="989" height="784" alt="Example of the events shown in the diagram" src="https://github.com/user-attachments/assets/6f02efef-64a9-4170-9013-38ede201b8b8" />
+
 
 ## How to send log events
-Network requests from native and RN logged automatically.
+Network requests from native (iOS & Android) and React Native are logged automatically.
 
 ### RN
 ```typescript
