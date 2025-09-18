@@ -3,19 +3,20 @@ import subprocess
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
-from config import OPEN_PNG, VISUAL_URL, VISUAL_ADD_TIME_AT_THE_END, PNG_PATH
-from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_IOS, TYPE_RN, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ, RSP
+from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_IOS, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ, RSP
 
+VISUAL_URL = 180
+VISUAL_ADD_TIME_AT_THE_END = 7000
 NATIVE_COLOR = "blue"
 RN_COLOR = "green"
 NET_REQUEST_COLOR = "orange"
 NET_RESPONSE_COLOR = "yellow"
 ASYNC_COLOR = "red"
 
-def save_png_with_data(input_averages):
-    save_png(input_averages, PNG_PATH)
+def save_png_with_data(input_averages, png_path, open_png):
+    save_png(input_averages, png_path, open_png)
 
-def save_png(input_averages, png_path):
+def save_png(input_averages, png_path, open_png):
     print("Visualizing the data, saving to png...")
     num_events = len(input_averages)
 
@@ -124,6 +125,6 @@ def save_png(input_averages, png_path):
     # Save the plot as a PNG image
     plt.savefig(png_path)  # Replace with desired filename
 
-    if OPEN_PNG:
+    if open_png:
         # Open png file
         subprocess.run(["open", png_path])

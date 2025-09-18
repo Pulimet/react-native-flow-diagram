@@ -1,9 +1,6 @@
 import subprocess
-import time
 import fcntl
 import os
-
-from config import BUNDLE_ID
 
 class IOSLogCollector:
     """
@@ -14,10 +11,10 @@ class IOSLogCollector:
         self._is_simulator = False
         self._is_real_device = False
 
-    def start(self, is_simulator, is_real_device):
+    def start(self, platform, bundle_id):
         """Starts capturing logs in a background subprocess."""
-        self._is_simulator = is_simulator
-        self._is_real_device = is_real_device
+        self._is_simulator = platform == 'ios_simulator'
+        self._is_real_device = platform == 'ios_device'
 
         if self._log_process:
             print("INFO: Log capture is already running.")
@@ -27,7 +24,7 @@ class IOSLogCollector:
             print("INFO: No single iOS simulator or device found. Cannot capture logs.")
             return
 
-        predicate = f'subsystem == "{BUNDLE_ID}"'
+        predicate = f'subsystem == "{bundle_id}"'
 
         if self._is_simulator:
             command = [

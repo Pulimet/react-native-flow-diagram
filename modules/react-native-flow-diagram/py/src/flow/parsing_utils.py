@@ -1,5 +1,3 @@
-from config import SHOW_NETWORK_REQUEST, SHOW_NETWORK_RESPONSE, SHOW_REGULAR_LOG, FILTER_NETWORK_REQUEST
-
 ARROW = "=>"
 
 TIME_PARAM = "time"
@@ -52,35 +50,21 @@ def parse_logs(logcat_output, log_tag):
 
         # Network request case
         if log_type == TYPE_NET and NET_REQ in line:
-            if SHOW_NETWORK_REQUEST:
-                if FILTER_NETWORK_REQUEST and FILTER_NETWORK_REQUEST not in line:
-                    continue
-
-                parsed = parse_network_request(time_since_start, line)
-                parsed_data.append(parsed)
-            continue
-
-            # Network response case
-        if log_type == TYPE_NET and NET_RSP in line:
-            if SHOW_NETWORK_RESPONSE:
-                if FILTER_NETWORK_REQUEST and FILTER_NETWORK_REQUEST not in line:
-                    continue
-
-                parsed = parse_network_response(time_since_start, line)
-                parsed_data.append(parsed)
-            continue
-
-            # Regular log case
-        if SHOW_REGULAR_LOG:
-            # Assuming the format is [TYPE] message, we pass the type and message
-            parsed = parse_regular_log(time_since_start, log_type, line, recent_sync_log_time)
-            if parsed[SYNC_ASYNC_PARAM] == SYNC:
-                recent_sync_log_time = time_since_start
+            parsed = parse_network_request(time_since_start, line)
             parsed_data.append(parsed)
+            continue
 
-    # Add for going over parsed_data and print each one
-    # for item in parsed_data:
-    #     print(item)
+        # Network response case
+        if log_type == TYPE_NET and NET_RSP in line:
+            parsed = parse_network_response(time_since_start, line)
+            parsed_data.append(parsed)
+            continue
+
+        # Regular log case
+        parsed = parse_regular_log(time_since_start, log_type, line, recent_sync_log_time)
+        if parsed[SYNC_ASYNC_PARAM] == SYNC:
+            recent_sync_log_time = time_since_start
+        parsed_data.append(parsed)
 
     return parsed_data
 

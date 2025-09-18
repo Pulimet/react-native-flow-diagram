@@ -1,0 +1,362 @@
+import subprocess
+import shlex
+import re
+import os
+from .ios_log_collector import IOSLogCollector
+
+REQUIRED_DEVICES = 1
+
+# Module-level variables to store the validation state.
+# They are accessible by any function within this file after being set.
+_log_collector = None
+_udid = None
+
+def validate_ios_simulator():
+    """Validates that exactly one iOS simulator is booted."""
+    try:
+        global _udid
+        booted_sim_count = _get_booted_simulator_count()
+        print(f"booted_sim_count: {booted_sim_count}")
+
+        if booted_sim_count == 0:
+            print("Validation of iOS simulator failed: No booted iOS simulators found.")
+            return False
+        elif booted_sim_count > REQUIRED_DEVICES:
+            print(f"Validation of iOS simulator failed: Expected {REQUIRED_DEVICES} booted simulator, but found {booted_sim_count}.")
+            return False
+
+        _udid = _get_booted_simulator_udid()
+        print(f"Validation passed and simulator udid is: {_udid}")
+        return True
+
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("Validation of iOS simulator failed: `xcrun` command-line tools not found or failed. Make sure Xcode is installed.")
+        return False
+
+def validate_ios_device():
+    try:
+        global _udid
+        real_device_count = _get_real_device_count()
+        print(f"_real_device_count: {real_device_count}")
+
+        if real_device_count == 0:
+            print("Validation of iOS device failed: No iOS devices found.")
+            return False
+        elif real_device_count > REQUIRED_DEVICES:
+            print(
+                f"Validation of iOS device failed: Expected {REQUIRED_DEVICES} device, but found {real_device_count}.")
+            return False
+
+        _udid = _get_real_device_udid()
+        print(f"Validation passed and device udid is: {_udid}")
+        return True
+
+    except  (subprocess.CalledProcessError, FileNotFoundError):
+        print("Validation of iOS device failed: `xcrun` command-line tools not found or failed. Make sure Xcode is installed.")
+        return False
+
+def _get_real_device_count():
+    """Counts connected physical iOS devices using xcrun."""
+    real_devices_output = subprocess.check_output(["xcrun", "xctrace", "list", "devices"], text=True,
+                                                  stderr=subprocess.PIPE)
+    lines = real_devices_output.splitlines()
+    device_section = False
+    real_device_count = 0
+    for line in lines:
+        # If we hit any new section header, we are no longer in the active "Devices" section.
+        if line.strip().startswith("==") and not line.strip() == "== Devices ==":
+            device_section = False
+        if line.startswith("== Devices =="):
+            device_section = True
+            continue  # Skip the header line itself
+
+        # A real, connected device has an OS version like (18.6.2) in its line.
+        # This check only runs when device_section is True.
+        if device_section and re.search(r'\([\d.]+\)', line):
+            real_device_count += 1
+    return real_device_count
+
+def _get_booted_simulator_count():
+    """Counts booted iOS simulators using xcrun."""
+    simulators_output = subprocess.check_output(["xcrun", "simctl", "list", "devices"], text=True)
+    lines = simulators_output.splitlines()
+    booted_sim_count = 0
+    # Regex to find an iOS runtime section header, e.g., "-- iOS 17.2 --"
+    ios_section_regex = re.compile(r"^-- iOS [\d.]+ --$")
+    in_ios_section = False
+    for line in lines:
+        if ios_section_regex.match(line.strip()):
+            in_ios_section = True
+        elif in_ios_section and line.strip().startswith("--"):  # A new OS section starts, exit iOS section
+            in_ios_section = False
+        if in_ios_section and '(Booted)' in line:
+            booted_sim_count += 1
+    return booted_sim_count
+
+def _get_booted_simulator_udid():
+    """Gets the UDID of the single booted iOS simulator."""
+    simulators_output = subprocess.check_output(["xcrun", "simctl", "list", "devices"], text=True)
+    lines = simulators_output.splitlines()
+    ios_section_regex = re.compile(r"^-- iOS [\d.]+ --$")
+    in_ios_section = False
+    for line in lines:
+        if ios_section_regex.match(line.strip()):
+            in_ios_section = True
+        elif in_ios_section and line.strip().startswith("--"):
+            in_ios_section = False
+
+        if in_ios_section and '(Booted)' in line:
+            # Extract the UDID from a line like: "iPhone 15 Pro (UDID) (Booted)"
+            match = re.search(r'([A-F0-9]{8}-(?:[A-F0-9]{4}-){3}[A-F0-9]{12})', line)
+            if match:
+                return match.group(1)
+    return None
+
+def _get_real_device_udid():
+    """Gets the UDID of the single connected physical iOS device."""
+    try:
+        # Using `xcrun xctrace` is more reliable for getting real device UDIDs.
+        devices_output = subprocess.check_output(
+            ["xcrun", "xctrace", "list", "devices"], text=True, stderr=subprocess.PIPE
+        )
+        lines = devices_output.splitlines()
+        in_devices_section = False
+        for line in lines:
+            if line.strip().startswith("==") and not line.strip() == "== Devices ==":
+                in_devices_section = False
+            if line.startswith("== Devices =="):
+                in_devices_section = True
+                continue  # Skip the header line itself
+
+            # A real, connected device has an OS version like (18.6.2) in its line.
+            # This check only runs when device_section is True.
+            if in_devices_section and re.search(r'\([\d.]+\)', line):
+                match = re.search(r'\(([0-9A-F-]+)\)$', line.strip())
+                if match:
+                    udid = match.group(1)
+                    # Basic validation to ensure it's not just the OS version like '(17.5.1)'
+                    if '-' in udid or len(udid) > 10:
+                        return udid
+
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        # This can happen if Xcode command-line tools are not installed or the command fails.
+        return None
+
+    return None
+
+def prevent_ios_screen_lock(enable):
+    """
+    Prevents the screen from locking on a booted iOS simulator.
+    This functionality is not supported for physical devices via command line.
+    """
+    try:
+        action_str = "Disabling" if enable else "Enabling"
+        print(f"{action_str} screen auto-lock on the iOS simulator...")
+
+        if not _udid:
+            print("ERROR: Could not find the UDID of the booted simulator.")
+            return
+
+        # Construct the path to the springboard preferences file.
+        plist_path = os.path.expanduser(f"~/Library/Developer/CoreSimulator/Devices/{_udid}/data/Library/Preferences/com.apple.springboard.plist")
+
+        # Ensure the directory for the plist file exists, as it might not on a fresh simulator.
+        os.makedirs(os.path.dirname(plist_path), exist_ok=True)
+
+        command = [
+            "defaults", "write", f"{plist_path}",
+            "SBIdleTimerDisabled", "-bool", "true" if enable else "false"
+        ]
+        subprocess.run(command, check=True, capture_output=True)
+
+        # --- Validation Step ---
+        # Read the setting back to verify the change.
+        try:
+            read_command = ["defaults", "read", plist_path, "SBIdleTimerDisabled"]
+            result = subprocess.check_output(read_command, text=True, stderr=subprocess.PIPE).strip()
+            expected_value = "1" if enable else "0"
+
+            if result == expected_value:
+                print("Successfully verified screen lock setting change.")
+            else:
+                print(f"ERROR: Verification of screen lock setting failed. Expected '{expected_value}' but found '{result}'.")
+                return
+        except subprocess.CalledProcessError:
+            print("ERROR: Could not read back screen lock setting to verify the change.")
+            return
+
+        # Restart the springboard to apply the change
+        # The most reliable way is to use `simctl terminate` with the SpringBoard bundle ID.
+        print("Restarting simulator's SpringBoard to apply settings...")
+        springboard_bundle_id = "com.apple.springboard"
+        # We remove `check=True` because this command may fail if SpringBoard restarts automatically
+        # after the `defaults write` command. In that case, failing is the desired outcome.
+        subprocess.run(["xcrun", "simctl", "terminate", "booted", springboard_bundle_id], capture_output=True)
+
+    except subprocess.CalledProcessError as e:
+        print("ERROR: A command failed while trying to change screen lock settings.")
+        print(f"Command: {' '.join(e.cmd)}")
+        print(f"Stderr: {e.stderr.decode('utf-8').strip()}")
+    except FileNotFoundError as e:
+        print(f"ERROR: Command not found: {e.filename}. Ensure Xcode command-line tools are installed.")
+
+def get_pid():
+    # print("INFO: Getting PID...")
+    # xcrun devicectl device info processes --device 00008101-00094D162142001E | grep -i flowdiagram
+    # xcrun devicectl device info processes --device 00008101-00094D162142001E | grep -i flowdiagram | awk '{print $1}'
+
+    # 1. Command to get all processes from the device
+    command1_str = f"xcrun devicectl device info processes --device {_udid}"
+
+    # 2. Command to filter for 'flowdiagram'
+    command2_str = "grep -i flowdiagram"
+
+    # 3. Command to extract the first column (the PID)
+    command3_str = "awk '{print $1}'"
+
+    try:
+        # Execute the first command
+        # print(">>> Executing command: " + command1_str)
+        process1 = subprocess.Popen(shlex.split(command1_str), stdout=subprocess.PIPE)
+
+        # Pipe the output of the first command to the second command (grep)
+        # print(">>> Executing command: " + command2_str)
+        process2 = subprocess.Popen(shlex.split(command2_str), stdin=process1.stdout, stdout=subprocess.PIPE)
+
+        # Allow process1 to receive a SIGPIPE if process2 exits before it
+        if process1.stdout:
+            process1.stdout.close()
+
+        # Pipe the output of the second command to the third command (awk)
+        # print(">>> Executing command: " + command3_str)
+        process3 = subprocess.Popen(shlex.split(command3_str), stdin=process2.stdout, stdout=subprocess.PIPE)
+
+        # Allow process2 to receive a SIGPIPE if process3 exits before it
+        if process2.stdout:
+            process2.stdout.close()
+
+        # Get the final output and decode it from bytes to string
+        output, error = process3.communicate()
+
+        if error:
+            print(f"Error: {error.decode('utf-8').strip()}")
+            return ""
+        pid = output.decode('utf-8').strip()
+        # print(f"PID: {pid}")
+        return pid
+
+    except FileNotFoundError:
+        print("Error: 'xcrun' could not be found. Please ensure Xcode Command Line Tools are installed.")
+        return ""
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return ""
+
+def close_ios_simulator_app(bundle_id):
+    """Closes the app on the booted iOS simulator."""
+    print(f"Closing app with bundle ID: {bundle_id} on the booted simulator and UDID: {_udid}...")
+
+    try:
+        command = ["xcrun", "simctl", "terminate", "booted", bundle_id]
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode == 0:
+            print("Successfully sent terminate signal to the app on the simulator.")
+        else:
+            # simctl terminate exits with a non-zero code if the app wasn't running, which is fine.
+            print("App was not running on the simulator or could not be terminated.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to terminate app with bundle ID: {bundle_id}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
+
+def close_ios_device_app(bundle_id):
+    """Closes the app on the connected physical iOS device."""
+    print(f"Closing app with bundle ID: {bundle_id} on the device with UDID: {_udid}...")
+
+    try:
+        pid = get_pid()
+        if pid == "":
+            print("ERROR: Could not find the PID of the device. Can't close the app on the device.")
+            return
+
+        # Close:
+        # xcrun devicectl device process terminate --device 00008101-00094D162142001E --pid 1091
+
+        command = ["xcrun", "devicectl", "device", "process", "terminate", "--device", _udid, "--pid", pid]
+        # Print command
+        print(f">>> Executing command:  {' '.join(command)}")
+        result = subprocess.run(command, capture_output=True, text=True)
+        # if result.returncode == 0:
+        #     print("Successfully sent terminate signal to the app on the device.")
+        # else:
+        #     print("App was not running on the device or could not be terminated.")
+        # if result.stdout:
+        #     print(f"Output: {result.stdout}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to terminate app with bundle ID: {bundle_id}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
+
+def launch_ios_simulator_app(bundle_id):
+    """Launches the app on the booted simulator."""
+    print(f"Launching app with bundle ID: {bundle_id} on the booted simulator...")
+
+    try:
+        command = ["xcrun", "simctl", "launch", "booted", bundle_id]
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        print(f"Successfully launched app with bundle ID: {bundle_id} on the simulator.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to launch app with bundle ID: {bundle_id}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
+
+def launch_ios_device_app(bundle_id):
+    """Launches the app on the connected physical iOS device."""
+    print(f"Launching app with bundle ID: {bundle_id} on the device...")
+
+    try:
+        # Launch
+        # xcrun devicectl device process launch --device 00008101-00094D162142001E org.reactjs.native.example.FlowDiagram
+        command = ["xcrun", "devicectl", "device", "process", "launch", "--device", _udid, bundle_id]
+        print(f">>> Executing command:  {' '.join(command)}")
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        # if result.returncode == 0:
+        #     print("Successfully sent launch signal to the app on the device.")
+        # else:
+        #     print("Failed to send launch signal to the app on the device")
+        # if result.stdout:
+        #     print(f"Output: {result.stdout}")
+
+    except subprocess.CalledProcessError as e:
+        print(f"ERROR: Failed to launch app with bundle ID: {bundle_id}")
+        print(f"Stderr: {e.stderr.strip()}")
+    except FileNotFoundError:
+        print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
+
+def start_ios_log_capture(platform, bundle_id):
+    """
+    Initializes and starts capturing logs from a booted iOS simulator or a connected physical device.
+    """
+    global _log_collector
+    if not _log_collector:
+        _log_collector = IOSLogCollector()
+    _log_collector.start(platform, bundle_id)
+
+def stop_ios_log_capture():
+    """
+    Stops capturing logs and returns the collected log lines.
+    """
+    global _log_collector
+    if not _log_collector:
+        print("INFO: Log capture was never started.")
+        return []
+
+    logs = _log_collector.stop()
+    _log_collector = None  # Clean up
+    return logs

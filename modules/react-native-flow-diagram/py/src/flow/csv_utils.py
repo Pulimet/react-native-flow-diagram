@@ -2,24 +2,19 @@ import csv
 import subprocess
 
 from calc_average import COUNT_PARAM, MIN_TIME_PARAM, MAX_TIME_PARAM, ALL_TIME_PARAM
-from config import PACKAGE, WAIT_TIME, LAUNCH_COUNT, OPEN_CSV, FILE_PATH, SHOW_NETWORK_RESPONSE
 from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, REQ_RSP_PARAM
 
 
-def save_csv_with_data(input_averages):
+def save_csv_with_data(input_averages, package, launch_times, wait_time, csv_path, csv_net_path, open_csv):
     print("Saving the averages data to csv...")
-    save_csv(input_averages)
+    save_csv(input_averages, package, launch_times, wait_time, csv_path)
+    save_csv_only_with_network_responses(input_averages, csv_net_path)
 
-    if SHOW_NETWORK_RESPONSE:
-        save_csv_only_with_network_responses(input_averages)
-
-    if OPEN_CSV:
-        open_csv_with_numbers()
+    if open_csv:
+        open_csv_with_numbers(csv_path)
 
 
-def save_csv(input_averages):
-    csv_path = f"{FILE_PATH}.csv"
-
+def save_csv(input_averages, package, launch_times, wait_time, csv_path):
     with open(csv_path, "w") as f:
         writer = csv.writer(f)
 
@@ -53,17 +48,16 @@ def save_csv(input_averages):
         # Write TIME, REPEAT and PACKAGE
         writer.writerow(["---", "---", "---", "---", "---", "---", "---", "---"])
         writer.writerow(["TIME", "REPEAT", "---", "PACKAGE", "---", "---", "---", "---", ])
-        writer.writerow([WAIT_TIME, LAUNCH_COUNT, "---", PACKAGE, "---", "---", "---", "---", ])
+        writer.writerow([wait_time, launch_times, "---", package, "---", "---", "---", "---", ])
 
 
-def save_csv_only_with_network_responses(input_averages):
+def save_csv_only_with_network_responses(input_averages, csv_net_path):
     print("Saving the averages of only network data to csv...")
-    csv_path = f"{FILE_PATH}_net.csv"
 
     # Filter only network responses
     input_averages = [item for item in input_averages if item[TYPE_PARAM] == TYPE_NET]
 
-    with open(csv_path, "w") as f:
+    with open(csv_net_path, "w") as f:
         writer = csv.writer(f)
 
         # Write the header row for the data
@@ -80,9 +74,8 @@ def save_csv_only_with_network_responses(input_averages):
             )
 
 
-def open_csv_with_numbers():
+def open_csv_with_numbers(csv_path):
     print("Open CSV file with Numbers...")
-    csv_path = f"{FILE_PATH}.csv"
     try:  # Use the 'open' command to launch Numbers with the CSV file
         subprocess.run(["open", "-a", "Numbers", csv_path])
     except subprocess.CalledProcessError as e:

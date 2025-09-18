@@ -1,10 +1,9 @@
 import subprocess
-from config import ANDROID_LOG_TAG
 
-def capture_android_logs(timeout):
+def capture_android_logs(timeout, log_tag):
     print(f"Capturing logcat output with timeout of {timeout} seconds...")
     logcat_process = subprocess.Popen(
-        ["adb", "logcat", f"{ANDROID_LOG_TAG}:I *:S"],
+        ["adb", "logcat", f"{log_tag}:I *:S"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
