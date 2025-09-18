@@ -1,16 +1,19 @@
-[project]
+[tool.poetry]
 name = "net-alexandroid-flowdiagram-py"
 version = "1.0.1"
 description = "Parsing logs to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze app behavior and processes."
 authors = [
-    { name = "Pulimet", email = "korolev2009@gmail.com" }
+    "Pulimet <korolev2009@gmail.com>"
 ]
-license = { text = "MIT license" }
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "matplotlib"
-]
+
+[tool.poetry.dependencies]
+python = ">=3.13"
+matplotlib = "*"
+
+[[tool.poetry.packages]]
+include = "src/flow"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
