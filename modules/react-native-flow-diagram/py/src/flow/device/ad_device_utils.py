@@ -50,14 +50,14 @@ def launch_android_app(package):
         ["adb", "shell", "monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1"],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-def launch_activity_with_extras(package, activity, extra_key, extra_value):
-    print(f"Launching {activity} with specific intent...")
+def launch_activity_with_extras(params):
+    print(f"Launching {params.activity} with specific intent...")
     command = [
         "adb", "shell", "am", "start",
-        "-n", f"{package}/{activity}",
+        "-n", f"{params.package}/{params.activity}",
         "-a", "android.intent.action.VIEW",
         "-c", "android.intent.category.DEFAULT",
-        "--ez", f"{extra_key}", f"{extra_value}"
+        "--ez", f"{params.extra_key}", f"{params.extra_value}"
     ]
     print(command)
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

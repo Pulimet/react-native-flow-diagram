@@ -5,17 +5,19 @@ from calc_average import COUNT_PARAM, MIN_TIME_PARAM, MAX_TIME_PARAM, ALL_TIME_P
 from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, REQ_RSP_PARAM
 
 
-def save_csv_with_data(input_averages, package, launch_times, wait_time, csv_path, csv_net_path, open_csv):
+def save_csv_with_data(input_averages, params):
     print("Saving the averages data to csv...")
-    save_csv(input_averages, package, launch_times, wait_time, csv_path)
-    save_csv_only_with_network_responses(input_averages, csv_net_path)
+    save_csv(input_averages, params)
+    save_csv_only_with_network_responses(input_averages, params.csv_net_path)
 
-    if open_csv:
-        open_csv_with_numbers(csv_path)
+    if params.open_csv:
+        open_csv_with_numbers(params.csv_path)
 
 
-def save_csv(input_averages, package, launch_times, wait_time, csv_path):
-    with open(csv_path, "w") as f:
+def save_csv(input_averages, params):
+    with open(params.csv_path, "w") as f:
+        report_package = params.package if params.platform == 'android' else params.bundle_id
+
         writer = csv.writer(f)
 
         # Write the header row for the data
@@ -48,7 +50,7 @@ def save_csv(input_averages, package, launch_times, wait_time, csv_path):
         # Write TIME, REPEAT and PACKAGE
         writer.writerow(["---", "---", "---", "---", "---", "---", "---", "---"])
         writer.writerow(["TIME", "REPEAT", "---", "PACKAGE", "---", "---", "---", "---", ])
-        writer.writerow([wait_time, launch_times, "---", package, "---", "---", "---", "---", ])
+        writer.writerow([params.wait_time, params.launch_times, "---", report_package, "---", "---", "---", "---", ])
 
 
 def save_csv_only_with_network_responses(input_averages, csv_net_path):
@@ -61,7 +63,7 @@ def save_csv_only_with_network_responses(input_averages, csv_net_path):
         writer = csv.writer(f)
 
         # Write the header row for the data
-        writer.writerow(["Time", "Type",  "Duration", "URL", "Count"])
+        writer.writerow(["Time", "Type", "Duration", "URL", "Count"])
 
         # Write the data but message is limited to 50 characters. add "..." only if was limited
         for item in input_averages:

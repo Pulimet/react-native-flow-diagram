@@ -9,43 +9,42 @@ from visualize import save_png_with_data
 
 def main():
     print("----------------------- Measurement Script Started----------------------- ")
-    platform, package, extra, bundle_id, wait_time, activity, extra_key, extra_value, launch_times, csv_path, csv_net_path, png_path, output_dir, output_path, open_csv, open_png  = parse_args()
+    params  = parse_args()
     print("\n----------------------- VALIDATION STEP ----------------------- ")
 
-    if not validate_device_and_package(platform, package):
+    if not validate_device_and_package(params):
         print("\nValidation step failed.")
         exit(1) # Exit if no platform is validated successfully
     print("----------------------- VALIDATION PASSED -> PREPARE STAGE----------------------- ")
 
     # Prepare
-    prevent_screen_lock(True, platform)
-    close_app(platform, package, bundle_id)
-    compile_package(platform, package)
+    prevent_screen_lock(True, params.platform)
+    close_app(params)
+    compile_package(params)
     print("----------------------- PREPARE STAGE PASSED -> MEASUREMENT STAGE ----------------------- ")
 
     # Launch and measure
-    data = start_measurements(platform, wait_time, package, bundle_id, extra, activity, extra_key, extra_value, launch_times)
+    data = start_measurements(params)
 
     print("----------------------- MEASUREMENT STAGE PASSED -> START CLEAN STAGE ----------------------- ")
 
     # Clean
-    prevent_screen_lock(False, platform)
-    close_app(platform, package, bundle_id)
+    prevent_screen_lock(False, params.platform)
+    close_app(params)
 
     print("----------------------- CLEAN STAGE PASSED -> START CALC & CREATE OUTPUT STAGE ----------------------- ")
-    create_folders(output_dir, output_path)
+    create_folders(params)
     # Calculate
     averages = calculate_averages(data)
     # Save and show results
-    report_package = package if platform == 'android' else bundle_id
-    save_csv_with_data(averages, report_package, launch_times, wait_time, csv_path, csv_net_path, open_csv)
-    save_png_with_data(averages, png_path, open_png)
+    save_csv_with_data(averages, params)
+    save_png_with_data(averages, params)
 
-def create_folders(output_dir, output_path):
-    print(f"Creating folder {output_dir}...")
+def create_folders(params):
+    print(f"Creating folder {params.output_dir}...")
     # Create local (mac) folder if not exist:
-    subprocess.run(["mkdir", "-p", output_dir])
-    subprocess.run(["mkdir", "-p", output_path])
+    subprocess.run(["mkdir", "-p", params.output_dir])
+    subprocess.run(["mkdir", "-p", params.output_path])
 
 if __name__ == '__main__':
     main()

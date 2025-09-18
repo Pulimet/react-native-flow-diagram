@@ -13,10 +13,10 @@ NET_REQUEST_COLOR = "orange"
 NET_RESPONSE_COLOR = "yellow"
 ASYNC_COLOR = "red"
 
-def save_png_with_data(input_averages, png_path, open_png):
-    save_png(input_averages, png_path, open_png)
+def save_png_with_data(input_averages, params):
+    save_png(input_averages, params)
 
-def save_png(input_averages, png_path, open_png):
+def save_png(input_averages, params):
     print("Visualizing the data, saving to png...")
     num_events = len(input_averages)
 
@@ -123,8 +123,8 @@ def save_png(input_averages, png_path, open_png):
 
     plt.title('Timeline Visualization of Message Averages')
     # Save the plot as a PNG image
-    plt.savefig(png_path)  # Replace with desired filename
+    plt.savefig(params.png_path)  # Replace with desired filename
 
-    if open_png:
+    if params.open_png:
         # Open png file
-        subprocess.run(["open", png_path])
+        subprocess.run(["open", params.png_path])

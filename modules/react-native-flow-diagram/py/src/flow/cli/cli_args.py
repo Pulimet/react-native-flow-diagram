@@ -1,5 +1,7 @@
 import argparse
 from datetime import datetime
+from dataclasses import dataclass
+
 
 # bundle_id - You can find this in Xcode under Target > General > Identity > Bundle Identifier.
 
@@ -36,4 +38,28 @@ def parse_args():
     csv_net_path = f"{file_path}_net.csv"
     png_path = f"{file_path}.png"
 
-    return args.platform, args.package, args.extra, args.bundle_id, args.wait_time, args.activity, args.extra_key, args.extra_value, args.launch_times, csv_path, csv_net_path, png_path, args.output_dir, output_path, args.open_csv, args.open_png
+    return CLIParams(
+        args.platform, args.package, args.extra, args.bundle_id, args.wait_time,
+        args.activity, args.extra_key, args.extra_value, args.launch_times,
+        csv_path, csv_net_path, png_path, args.output_dir, output_path,
+        args.open_csv, args.open_png
+    )
+
+@dataclass
+class CLIParams:
+    platform: str
+    package: str
+    extra: bool
+    bundle_id: str
+    wait_time: int
+    activity: str
+    extra_key: str
+    extra_value: str
+    launch_times: int
+    csv_path: str
+    csv_net_path: str
+    png_path: str
+    output_dir: str
+    output_path: str
+    open_csv: bool
+    open_png: bool
