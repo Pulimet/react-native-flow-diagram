@@ -52,6 +52,8 @@ if __name__ == '__main__':
 
 
 ########## PREPARE #########
+# sudo ln -s $(which python3) /usr/local/bin/python
+
 # Below used to receive iOS logs from real device
 # brew install libimobiledevice
 
@@ -63,10 +65,7 @@ if __name__ == '__main__':
 # Activate the virtual environment (Mac/Linux)
 # source .venv/bin/activate
 
-# poetry install
-
 # pip install matplotlib --timeout 1000 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
-# pip install poetry-core --timeout 1000 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
 
 ########## LAUNCH #########
 # python3 main.py
