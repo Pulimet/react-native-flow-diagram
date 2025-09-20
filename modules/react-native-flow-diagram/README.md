@@ -136,7 +136,7 @@ Add to your package.json:
 
 ```json
 "scripts": {
-  "flow-setup": "cd modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
+  "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
   "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python node_modules/react-native-flow-diagram/py/src/flow/main.py",
   "flow:android": "npm run flow -- --platform android",
   "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
