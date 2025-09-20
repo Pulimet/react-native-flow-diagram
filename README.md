@@ -49,7 +49,12 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
     ```shell
     npm i react-native-flow-diagram
     ```
-
+    ```shell
+    cd ios
+    ```    
+    ```shell
+    pod install
+    ```
 ## Android  
 1. Add to settings.gradle
     ```groovy
