@@ -15,8 +15,6 @@ def parse_args():
     parser.add_argument('--package', type=str, default='com.flowdiagram', help='Android package name. (Default: com.flowdiagram)')
     parser.add_argument('--activity', type=str, default='com.flowdiagram.MainActivity', help='Android activity full name. (Default: com.flowdiagram.MainActivity)')
     parser.add_argument('--extra', type=bool, default=False, help='Extra Intent / Bundle Settings (Default: False)')
-    parser.add_argument('--extra_key', type=str, default='time', help='Extra key for intent. (Default: time)')
-    parser.add_argument('--extra_value', type=str, default='true', help='Extra value for intent. (Default: true)')
     parser.add_argument('--open_csv', type=bool, default=False, help='Should open CSV with results (Default: False)')
     parser.add_argument('--open_png', type=bool, default=False, help='Extra Should open PNG with results (Default: False)')
 
@@ -39,10 +37,8 @@ def parse_args():
     png_path = f"{file_path}.png"
 
     return CLIParams(
-        args.platform, args.package, args.extra, args.bundle_id, args.wait_time,
-        args.activity, args.extra_key, args.extra_value, args.launch_times,
-        csv_path, csv_net_path, png_path, args.output_dir, output_path,
-        args.open_csv, args.open_png
+        args.platform, args.package, args.extra, args.bundle_id, args.wait_time,args.activity, args.launch_times,
+        csv_path, csv_net_path, png_path, args.output_dir, output_path, args.open_csv, args.open_png
     )
 
 @dataclass
@@ -53,8 +49,6 @@ class CLIParams:
     bundle_id: str
     wait_time: int
     activity: str
-    extra_key: str
-    extra_value: str
     launch_times: int
     csv_path: str
     csv_net_path: str

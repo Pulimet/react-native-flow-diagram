@@ -174,5 +174,31 @@ Launch with bundle settings: **TBD**
 Launch with bundle settings: **TBD**
 
 
+## Configuration Options
+The measurement script supports several configuration options to customize its behavior. Below are the available options:
+
+```
+  usage: main.py [-h] [--platform {android,ios_device,ios_simulator}] [--output-dir OUTPUT_DIR] [--bundle_id BUNDLE_ID] [--wait_time WAIT_TIME] [--launch_times LAUNCH_TIMES] [--package PACKAGE]
+                 [--activity ACTIVITY] [--extra EXTRA] [--open_csv OPEN_CSV] [--open_png OPEN_PNG]
+  
+  options:
+    -h, --help            show this help message and exit
+    --platform {android,ios_device,ios_simulator}
+                          Platform to run measurements on. (Default: android)
+    --output-dir OUTPUT_DIR
+                          Directory to save results. (Default: output)
+    --bundle_id BUNDLE_ID
+                          iOS Bundle ID. (Default: org.reactjs.native.example.FlowDiagram)
+    --wait_time WAIT_TIME
+                          Wait time after app launch in seconds. (Default: 10)
+    --launch_times LAUNCH_TIMES
+                          How many times to launch the app. (Default: 1)
+    --package PACKAGE     Android package name. (Default: com.flowdiagram)
+    --activity ACTIVITY   Android activity full name. (Default: com.flowdiagram.MainActivity)
+    --extra EXTRA         Extra Intent / Bundle Settings (Default: False)
+    --open_csv OPEN_CSV   Should open CSV with results (Default: False)
+    --open_png OPEN_PNG   Extra Should open PNG with results (Default: False)
+```
+
 
 

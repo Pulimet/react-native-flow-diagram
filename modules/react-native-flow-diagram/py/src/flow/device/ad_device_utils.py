@@ -6,6 +6,9 @@ TIMEOUT_5 = "300000"
 # Screen timeout  60 minutes as a string
 TIMEOUT_60 = "3600000"
 
+EXTRA_KEY = "FlowDiagramFlag"
+EXTRA_VALUE = "true"
+
 def validate_android(package):
     # Check if the required number of devices is connected
     devices = subprocess.check_output(["adb", "devices"]).decode("utf-8").splitlines()
@@ -57,7 +60,7 @@ def launch_activity_with_extras(params):
         "-n", f"{params.package}/{params.activity}",
         "-a", "android.intent.action.VIEW",
         "-c", "android.intent.category.DEFAULT",
-        "--ez", f"{params.extra_key}", f"{params.extra_value}"
+        "--ez", f"{params.EXTRA_KEY}", f"{params.EXTRA_VALUE}"
     ]
     print(command)
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
