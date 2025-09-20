@@ -60,7 +60,7 @@ def launch_activity_with_extras(params):
         "-n", f"{params.package}/{params.activity}",
         "-a", "android.intent.action.VIEW",
         "-c", "android.intent.category.DEFAULT",
-        "--ez", f"{params.EXTRA_KEY}", f"{params.EXTRA_VALUE}"
+        "--ez", f"{EXTRA_KEY}", f"{EXTRA_VALUE}"
     ]
     print(command)
     subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
