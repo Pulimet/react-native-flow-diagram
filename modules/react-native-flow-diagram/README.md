@@ -4,13 +4,22 @@ A React Native logging utility that enables enhanced, structured logging. It inc
 to extract workflow steps and visualize them as interactive flow diagrams, helping developers easily track and analyze
 app behavior and processes.
 
+### Event Reporting Flow
+<img width="555" height="158" alt="image" src="https://github.com/user-attachments/assets/114e4c11-5d09-4c0c-be27-0574e36bcbc6" />
+
+### Measurement Script Flow
+<img width="1037" height="272" alt="image" src="https://github.com/user-attachments/assets/dfb4ffb9-2921-47aa-ab39-231f3fd8e0ee" />
+
+
 # Output Demonstration
 <img width="100%" alt="Flow Diagram Example" src="https://github.com/user-attachments/assets/f8b9a901-1c85-4bc3-b13d-376d8c1cf1ce" />
 <img width="100%" alt="Table with all logs" src="https://github.com/user-attachments/assets/09545e63-e44f-4e85-9012-c54eb7784035" />
 <img width="512" height="174" alt="Table wit network requests/responses" src="https://github.com/user-attachments/assets/685193b1-fcdd-4a10-b3f4-94795a294435" />
+<img width="989" height="784" alt="Example of the events shown in the diagram" src="https://github.com/user-attachments/assets/6f02efef-64a9-4170-9013-38ede201b8b8" />
+
 
 ## How to send log events
-Network requests from native and RN logged automatically.
+Network requests from native (iOS & Android) and React Native are logged automatically.
 
 ### RN
 ```typescript
@@ -114,16 +123,51 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
 
 Open xCode/Android Studio and launch.
 
-# Launch Measurements ([Working on...])
+# Launch Measurements
 
 ## Script configuration
 
+Add to your package.json:
+
+```json
+"scripts": {
+  "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && PIP_TRUSTED_HOST='pypi.org pypi.python.org files.pythonhosted.org' PIP_DEFAULT_TIMEOUT=1000 pip install poetry && poetry install",
+  "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python modules/react-native-flow-diagram/py/src/flow/main.py",
+  "flow:android": "npm run flow -- --platform android",
+  "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
+  "flow:ios_device": "npm run flow -- --platform ios_device"
+}
+```    
+
+Launch the setup script once:
+```shell
+    npm run flow-setup
+```
+
+## Launch Measurement Flow
+
 ### Android
+```shell
+    npm run flow:android
+``` 
+
+Launch with extras: **TBD**
 
 ### iOS Simulator
+```shell
+    npm run flow:ios_simulator
+```
+
+Launch with bundle settings: **TBD**
+
 
 ### iOS Real Device
+```shell
+    npm run flow:ios_device
+```
 
-## Launch 
+Launch with bundle settings: **TBD**
+
+
 
 

@@ -123,16 +123,51 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
 
 Open xCode/Android Studio and launch.
 
-# Launch Measurements ([Working on...])
+# Launch Measurements
 
 ## Script configuration
 
+Add to your package.json:
+
+```json
+"scripts": {
+  "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && PIP_TRUSTED_HOST='pypi.org pypi.python.org files.pythonhosted.org' PIP_DEFAULT_TIMEOUT=1000 pip install poetry && poetry install",
+  "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python modules/react-native-flow-diagram/py/src/flow/main.py",
+  "flow:android": "npm run flow -- --platform android",
+  "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
+  "flow:ios_device": "npm run flow -- --platform ios_device"
+}
+```    
+
+Launch the setup script once:
+```shell
+    npm run flow-setup
+```
+
+## Launch Measurement Flow
+
 ### Android
+```shell
+    npm run flow:android
+``` 
+
+Launch with extras: **TBD**
 
 ### iOS Simulator
+```shell
+    npm run flow:ios_simulator
+```
+
+Launch with bundle settings: **TBD**
+
 
 ### iOS Real Device
+```shell
+    npm run flow:ios_device
+```
 
-## Launch 
+Launch with bundle settings: **TBD**
+
+
 
 
