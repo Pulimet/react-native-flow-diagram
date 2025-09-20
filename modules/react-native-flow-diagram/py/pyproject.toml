@@ -9,7 +9,6 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.12"
 matplotlib = "*"
 
 [[tool.poetry.packages]]
