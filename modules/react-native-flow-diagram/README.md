@@ -132,7 +132,7 @@ Add to your package.json:
 ```json
 "scripts": {
   "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && PIP_TRUSTED_HOST='pypi.org pypi.python.org files.pythonhosted.org' PIP_DEFAULT_TIMEOUT=1000 pip install poetry && poetry install",
-  "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python modules/react-native-flow-diagram/py/src/flow/main.py",
+  "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python node_modules/react-native-flow-diagram/py/src/flow/main.py",
   "flow:android": "npm run flow -- --platform android",
   "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
   "flow:ios_device": "npm run flow -- --platform ios_device"
