@@ -6,6 +6,8 @@ from .ios_log_collector import IOSLogCollector
 
 REQUIRED_DEVICES = 1
 
+LAUNCH_ARGUMENT = "--flowDiagramFlag"
+
 # Module-level variables to store the validation state.
 # They are accessible by any function within this file after being set.
 _log_collector = None
@@ -301,29 +303,37 @@ def close_ios_device_app(bundle_id):
     except FileNotFoundError:
         print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
 
-def launch_ios_simulator_app(bundle_id):
+def launch_ios_simulator_app(params):
     """Launches the app on the booted simulator."""
-    print(f"Launching app with bundle ID: {bundle_id} on the booted simulator...")
+    print(f"Launching app with bundle ID: {params.bundle_id} on the booted simulator...")
 
     try:
-        command = ["xcrun", "simctl", "launch", "booted", bundle_id]
+        command = ["xcrun", "simctl", "launch", "booted", params.bundle_id]
+        if params.extra:
+            command.append(LAUNCH_ARGUMENT)
+        print(f">>> Executing command:  {' '.join(command)}")
         subprocess.run(command, check=True, capture_output=True, text=True)
-        print(f"Successfully launched app with bundle ID: {bundle_id} on the simulator.")
+        print(f"Successfully launched app with bundle ID: {params.bundle_id} on the simulator.")
 
     except subprocess.CalledProcessError as e:
-        print(f"ERROR: Failed to launch app with bundle ID: {bundle_id}")
+        print(f"ERROR: Failed to launch app with bundle ID: {params.bundle_id}")
         print(f"Stderr: {e.stderr.strip()}")
     except FileNotFoundError:
         print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")
 
-def launch_ios_device_app(bundle_id):
+def launch_ios_device_app(params):
     """Launches the app on the connected physical iOS device."""
-    print(f"Launching app with bundle ID: {bundle_id} on the device...")
+    print(f"Launching app with bundle ID: {params.bundle_id} on the device...")
 
     try:
         # Launch
         # xcrun devicectl device process launch --device 00008101-00094D162142001E org.reactjs.native.example.FlowDiagram
-        command = ["xcrun", "devicectl", "device", "process", "launch", "--device", _udid, bundle_id]
+        command = ["xcrun", "devicectl", "device", "process", "launch", "--device", _udid, params.bundle_id]
+
+        if params.extra:
+            command.append("--")
+            command.append(LAUNCH_ARGUMENT)
+
         print(f">>> Executing command:  {' '.join(command)}")
         subprocess.run(command, check=True, capture_output=True, text=True)
         # if result.returncode == 0:
@@ -334,7 +344,7 @@ def launch_ios_device_app(bundle_id):
         #     print(f"Output: {result.stdout}")
 
     except subprocess.CalledProcessError as e:
-        print(f"ERROR: Failed to launch app with bundle ID: {bundle_id}")
+        print(f"ERROR: Failed to launch app with bundle ID: {params.bundle_id}")
         print(f"Stderr: {e.stderr.strip()}")
     except FileNotFoundError:
         print("ERROR: `xcrun` command not found. Make sure Xcode command-line tools are installed.")

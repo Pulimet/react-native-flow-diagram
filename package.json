@@ -11,8 +11,11 @@
     "flow-setup": "cd modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
     "flow": "modules/react-native-flow-diagram/py/.venv/bin/python modules/react-native-flow-diagram/py/src/flow/main.py",
     "flow:android": "npm run flow -- --platform android",
+    "flow:android_extra": "npm run flow -- --platform android --extra True android --package com.flowdiagram --activity com.flowdiagram.MainActivity",
     "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
-    "flow:ios_device": "npm run flow -- --platform ios_device"
+    "flow:ios_simulator_extra": "npm run flow -- --platform ios_simulator --extra True",
+    "flow:ios_device": "npm run flow -- --platform ios_device",
+    "flow:ios_device_extra": "npm run flow -- --platform ios_device --extra True"
   },
   "dependencies": {
     "axios": "^1.11.0",

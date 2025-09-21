@@ -67,6 +67,9 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
     // import net.alexandroid.flowdiagram.LogTime
     
     override fun onCreate() {
+        // The true parameter enables detailed logging for app launch measurement
+        // Another option is false - it will log only when measurement script 
+        // is launched with -extra True (it will use option 5 below)
         LogTime.onApplicationOnCreate(true) // <-- Add this line before "super.onCreate()"
         super.onCreate()
         setupOkHttpClient()
@@ -108,6 +111,8 @@ FlowDiagramUtil.logAsync(message: "AppDelegate.makeNetworkRequest -> Network cal
     
     class AppDelegate: RCTAppDelegate {
         override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+            // The true parameter enables detailed logging for app launch measurement
+            // Another option is false - it will log only when measurement script launched with -extra True 
             FlowDiagramUtil.onAppLaunched(true)
             // Remaining code
         }
@@ -139,8 +144,11 @@ Add to your package.json:
 "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
 "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python node_modules/react-native-flow-diagram/py/src/flow/main.py",
 "flow:android": "npm run flow -- --platform android",
+"flow:android_extra": "npm run flow -- --platform android --extra True android --package com.flowdiagram --activity com.flowdiagram.MainActivity",
 "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
-"flow:ios_device": "npm run flow -- --platform ios_device"
+"flow:ios_simulator_extra": "npm run flow -- --platform ios_simulator --extra True",
+"flow:ios_device": "npm run flow -- --platform ios_device",
+"flow:ios_device_extra": "npm run flow -- --platform ios_device --extra True"
 }
 ```    
 
@@ -156,14 +164,20 @@ Launch the setup script once:
     npm run flow:android
 ``` 
 
-Launch with extras: **TBD**
+Launch with extras: 
+```shell
+    npm run flow:android_extra
+``` 
 
 ### iOS Simulator
 ```shell
     npm run flow:ios_simulator
 ```
 
-Launch with bundle settings: **TBD**
+Launch with launch argument: 
+```shell
+    npm run flow:ios_simulator_extra
+``` 
 
 
 ### iOS Real Device
@@ -171,14 +185,18 @@ Launch with bundle settings: **TBD**
     npm run flow:ios_device
 ```
 
-Launch with bundle settings: **TBD**
+Launch with launch argument: 
+```shell
+    npm run flow:ios_device_extra
+``` 
 
 
 ## Configuration Options
 The measurement script supports several configuration options to customize its behavior. Below are the available options:
 
 ```
-  usage: main.py [-h] [--platform {android,ios_device,ios_simulator}] [--output-dir OUTPUT_DIR] [--bundle_id BUNDLE_ID] [--wait_time WAIT_TIME] [--launch_times LAUNCH_TIMES] [--package PACKAGE]
+  usage: main.py [-h] [--platform {android,ios_device,ios_simulator}] [--output-dir OUTPUT_DIR] 
+                 [--bundle_id BUNDLE_ID] [--wait_time WAIT_TIME] [--launch_times LAUNCH_TIMES] [--package PACKAGE]
                  [--activity ACTIVITY] [--extra EXTRA] [--open_csv OPEN_CSV] [--open_png OPEN_PNG]
   
   options:

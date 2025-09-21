@@ -43,9 +43,9 @@ def launch_app(params):
         else:
              launch_android_app(params.package)
     if params.platform == 'ios_simulator':
-        launch_ios_simulator_app(params.bundle_id)
+        launch_ios_simulator_app(params)
     if params.platform == 'ios_device':
-        launch_ios_device_app(params.bundle_id)
+        launch_ios_device_app(params)
 
 
 def capture_logs_android(params, ad_log_tag):

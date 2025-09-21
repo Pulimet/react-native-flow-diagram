@@ -45,6 +45,11 @@ public class FlowDiagramUtil: NSObject {
         appLaunchTime = Date()
         isLogEnabled = logsEnabled
         print("App has launched - onAppLaunched called in Swift")
+        
+        let launchArguments = ProcessInfo.processInfo.arguments
+        if launchArguments.contains("--flowDiagramFlag") {
+            isLogEnabled = true
+        }
 
         if(!isLogEnabled) {
             return
