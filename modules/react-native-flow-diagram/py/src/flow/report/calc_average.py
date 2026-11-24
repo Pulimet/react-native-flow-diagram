@@ -1,5 +1,5 @@
 from collections import defaultdict, Counter
-from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, REQ_RSP_PARAM, SYNC_ASYNC_PARAM, LEVEL_PARAM
+from events.keys import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, REQ_RSP_PARAM, SYNC_ASYNC_PARAM, LEVEL_PARAM
 
 COUNT_PARAM = "count"
 MIN_TIME_PARAM = "minTime"

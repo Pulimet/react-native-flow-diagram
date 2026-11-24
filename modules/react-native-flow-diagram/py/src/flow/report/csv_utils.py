@@ -1,20 +1,20 @@
 import csv
 import subprocess
 
-from calc_average import COUNT_PARAM, MIN_TIME_PARAM, MAX_TIME_PARAM, ALL_TIME_PARAM
-from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, REQ_RSP_PARAM
+from report.calc_average import COUNT_PARAM, MIN_TIME_PARAM, MAX_TIME_PARAM, ALL_TIME_PARAM
+from events.keys import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, REQ_RSP_PARAM
 
 
-def save_csv_with_data(input_averages, params):
+def save_csv_with_data(input_averages, params, meta=None):
     print("Saving the averages data to csv...")
-    save_csv(input_averages, params)
+    save_csv(input_averages, params, meta)
     save_csv_only_with_network_responses(input_averages, params.csv_net_path)
 
     if params.open_csv:
         open_csv_with_numbers(params.csv_path)
 
 
-def save_csv(input_averages, params):
+def save_csv(input_averages, params, meta=None):
     with open(params.csv_path, "w") as f:
         report_package = params.package if params.platform == 'android' else params.bundle_id
 
@@ -50,7 +50,15 @@ def save_csv(input_averages, params):
         # Write TIME, REPEAT and PACKAGE
         writer.writerow(["---", "---", "---", "---", "---", "---", "---", "---"])
         writer.writerow(["TIME", "REPEAT", "---", "PACKAGE", "---", "---", "---", "---", ])
-        writer.writerow([params.wait_time, params.launch_times, "---", report_package, "---", "---", "---", "---", ])
+        runs = (meta or {}).get("runs", params.launch_times)
+        writer.writerow([params.wait_time, runs, "---", report_package, "---", "---", "---", "---", ])
+        if meta:
+            writer.writerow(["DEVICE", "OS", "BUILD", "VERSION", "T0", "NOTE", "---", "---"])
+            writer.writerow([meta.get("device", ""), meta.get("os", ""), meta.get("build", ""),
+                             meta.get("app_version", ""), meta.get("t0", ""), meta.get("note", ""), "---", "---"])
+            if meta.get("system_total_time_ms") is not None:
+                writer.writerow(["AM_TOTAL_TIME_AVG_MS", meta["system_total_time_ms"], "---", "---", "---", "---",
+                                 "---", "---"])
 
 
 def save_csv_only_with_network_responses(input_averages, csv_net_path):

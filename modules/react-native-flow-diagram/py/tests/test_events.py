@@ -4,8 +4,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from calc_average import calculate_averages
-from csv_utils import save_csv_with_data
+from report.calc_average import calculate_averages
+from report.csv_utils import save_csv_with_data
 from events.normalize import normalize, PROCESS_START_LABEL
 from events.reader import RunFileError, parse_run, read_run
 
@@ -125,7 +125,7 @@ def test_feeds_v1_png(tmp_path):
     pytest.importorskip("matplotlib")
     import matplotlib
     matplotlib.use("Agg")
-    from visualize import save_png_with_data
+    from report.visualize import save_png_with_data
     avgs = calculate_averages(normalize(read_run(FIX / "happy.jsonl")).entries)
     params = SimpleNamespace(png_path=str(tmp_path / "a.png"), open_png=False)
     save_png_with_data(avgs, params)

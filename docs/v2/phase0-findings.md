@@ -16,7 +16,7 @@ Date: 2026-11-24. Host: macOS, Xcode 27.0 (27A266a), Android emulator Pixel_9.
 
 - `RunFileWriter.kt` (Android) and `RunFileWriter.swift` (iOS) in the library. When the launch carries the flag and a run id, they write `run_start`, two `event` lines and `run_end` as JSON Lines. Called from `MainActivity.onCreate` and `AppDelegate.didFinishLaunchingWithOptions`.
 - Android extra `FlowDiagramSink=downloads` selects the MediaStore fallback (spike only).
-- Host script: `modules/react-native-flow-diagram/py/spike/phase0_fetch.py` (stdlib only).
+- Host script: `py/spike/phase0_fetch.py` (stdlib only). Removed in Phase 4, replaced by `py/src/flow/platforms/`; see git history before that commit. The commands below that call it are historical.
 
 ## Commands run
 

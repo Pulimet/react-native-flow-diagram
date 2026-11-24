@@ -1,71 +1,71 @@
-import subprocess
+import sys
+from pathlib import Path
 
 from cli.cli_args import parse_args
-from device.device_utils import validate_device_and_package, prevent_screen_lock, close_app, compile_package
-from measurements import start_measurements
-from calc_average import calculate_averages
-from csv_utils import save_csv_with_data
-from visualize import save_png_with_data
+from platforms import create_platform
+from platforms.base import PlatformError
+from report.calc_average import calculate_averages
+from report.csv_utils import save_csv_with_data
+from report.visualize import save_png_with_data
+from run_loop import FatalRunError, load_from_dir, report_meta, start_measurements
 
-def main():
+
+def main(argv=None):
     print("----------------------- Measurement Script Started----------------------- ")
-    params  = parse_args()
+    params = parse_args(argv)
+    try:
+        if params.from_dir:
+            print(f"----------------------- LOADING SAVED RUNS FROM {params.from_dir} -----------------------")
+            result, platform = load_from_dir(params.from_dir, params), None
+        else:
+            result, platform = measure(params)
+    except (PlatformError, FatalRunError) as e:
+        print(f"\nERROR: {e}")
+        return 1
+
+    if not result.runs:
+        print("\nERROR: no run produced usable data.")
+        for failure in result.failures:
+            print(f"  {failure}")
+        return 1
+    if result.failures:
+        print(f"\nWARNING: {len(result.failures)} run(s) failed, reports use {len(result.runs)} run(s).")
+
+    print("----------------------- START CALC & CREATE OUTPUT STAGE ----------------------- ")
+    Path(params.output_path).mkdir(parents=True, exist_ok=True)
+    meta = report_meta(result, platform)
+    averages = calculate_averages(result.entries)
+    save_csv_with_data(averages, params, meta)
+    save_png_with_data(averages, params, meta)
+    print(f"\nDone. CSV: {params.csv_path}\n      PNG: {params.png_path}")
+    return 0
+
+
+def measure(params):
     print("\n----------------------- VALIDATION STEP ----------------------- ")
-
-    if not validate_device_and_package(params):
-        print("\nValidation step failed.")
-        exit(1) # Exit if no platform is validated successfully
+    platform = create_platform(params)
     print("----------------------- VALIDATION PASSED -> PREPARE STAGE----------------------- ")
+    try:
+        platform.prepare()
+        print("----------------------- PREPARE STAGE PASSED -> MEASUREMENT STAGE ----------------------- ")
+        result = start_measurements(platform, params)
+        print(f"----------------------- MEASUREMENT STAGE DONE: {len(result.runs)}/{params.launch_times} "
+              "runs usable -----------------------")
+        if platform.note():
+            print(f"NOTE: {platform.note()}")
+        return result, platform
+    finally:
+        platform.cleanup()
 
-    # Prepare
-    prevent_screen_lock(True, params.platform)
-    close_app(params)
-    compile_package(params)
-    print("----------------------- PREPARE STAGE PASSED -> MEASUREMENT STAGE ----------------------- ")
-
-    # Launch and measure
-    data = start_measurements(params)
-
-    print("----------------------- MEASUREMENT STAGE PASSED -> START CLEAN STAGE ----------------------- ")
-
-    # Clean
-    prevent_screen_lock(False, params.platform)
-    close_app(params)
-
-    print("----------------------- CLEAN STAGE PASSED -> START CALC & CREATE OUTPUT STAGE ----------------------- ")
-    create_folders(params)
-    # Calculate
-    averages = calculate_averages(data)
-    # Save and show results
-    save_csv_with_data(averages, params)
-    save_png_with_data(averages, params)
-
-def create_folders(params):
-    print(f"Creating folder {params.output_dir}...")
-    # Create local (mac) folder if not exist:
-    subprocess.run(["mkdir", "-p", params.output_dir])
-    subprocess.run(["mkdir", "-p", params.output_path])
 
 if __name__ == '__main__':
-    main()
-
+    sys.exit(main())
 
 
 ########## PREPARE #########
-# sudo ln -s $(which python3) /usr/local/bin/python
-
-# Below used to receive iOS logs from real device
-# brew install libimobiledevice
-
 # cd [root of RN project]
-
-# Create a virtual environment
-# python3 -m venv .venv
-
-# Activate the virtual environment (Mac/Linux)
-# source .venv/bin/activate
-
-# pip install matplotlib --timeout 1000 --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org
+# python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+# Only adb (Android) and Xcode command line tools (iOS) are needed on the host.
 
 ########## LAUNCH #########
-# python3 main.py
+# python3 main.py --platform android --launch_times 10

@@ -60,7 +60,7 @@ class Run:
 
 @dataclass
 class NormalizedRun:
-    """entries use the v1 dict shape (see parsing_utils) so calc_average, CSV and PNG code work unchanged."""
+    """entries use the v1 dict shape (see keys.py) so calc_average, CSV and PNG code work unchanged."""
     entries: list
     effective_t0: str
     warnings: list = field(default_factory=list)

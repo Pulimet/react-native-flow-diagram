@@ -1,4 +1,4 @@
-from parsing_utils import (
+from events.keys import (
     TIME_PARAM, DURATION_PARAM, TYPE_PARAM, MSG_PARAM, REQ_RSP_PARAM, LEVEL_PARAM, SYNC_ASYNC_PARAM,
     TYPE_NET, TYPE_AD, TYPE_IOS, TYPE_RN, SYNC, REQ, RSP,
 )

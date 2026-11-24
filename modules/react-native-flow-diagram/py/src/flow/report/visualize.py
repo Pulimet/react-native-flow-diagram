@@ -3,7 +3,7 @@ import subprocess
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
-from parsing_utils import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_IOS, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ, RSP
+from events.keys import MSG_PARAM, TIME_PARAM, DURATION_PARAM, TYPE_PARAM, TYPE_NET, TYPE_AD, TYPE_IOS, SYNC_ASYNC_PARAM, ASYNC, REQ_RSP_PARAM, REQ, RSP
 
 VISUAL_URL = 180
 VISUAL_ADD_TIME_AT_THE_END = 7000
@@ -13,10 +13,10 @@ NET_REQUEST_COLOR = "orange"
 NET_RESPONSE_COLOR = "yellow"
 ASYNC_COLOR = "red"
 
-def save_png_with_data(input_averages, params):
-    save_png(input_averages, params)
+def save_png_with_data(input_averages, params, meta=None):
+    save_png(input_averages, params, meta)
 
-def save_png(input_averages, params):
+def save_png(input_averages, params, meta=None):
     print("Visualizing the data, saving to png...")
     num_events = len(input_averages)
 
@@ -121,7 +121,12 @@ def save_png(input_averages, params):
     for i in range(0, int(max_time) + 1, 1000):
         plt.axvline(x=i, color='gray', linestyle='-', linewidth=0.7)  # Gray for 1000ms
 
-    plt.title('Timeline Visualization of Message Averages')
+    title = 'Timeline Visualization of Message Averages'
+    if meta:
+        details = [f"{meta.get('device', '')} {meta.get('os', '')}".strip(), meta.get('build', ''),
+                   f"{meta.get('runs', '')} runs", f"t0: {meta.get('t0', '')}", meta.get('note', '')]
+        title += "\n" + ", ".join(d for d in details if d)
+    plt.title(title)
     # Save the plot as a PNG image
     plt.savefig(params.png_path)  # Replace with desired filename
 

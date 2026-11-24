@@ -144,79 +144,55 @@ Add to your package.json:
 "flow-setup": "cd node_modules/react-native-flow-diagram/py && python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt",
 "flow": "node_modules/react-native-flow-diagram/py/.venv/bin/python node_modules/react-native-flow-diagram/py/src/flow/main.py",
 "flow:android": "npm run flow -- --platform android",
-"flow:android_extra": "npm run flow -- --platform android --extra True android --package com.flowdiagram --activity com.flowdiagram.MainActivity",
 "flow:ios_simulator": "npm run flow -- --platform ios_simulator",
-"flow:ios_simulator_extra": "npm run flow -- --platform ios_simulator --extra True",
-"flow:ios_device": "npm run flow -- --platform ios_device",
-"flow:ios_device_extra": "npm run flow -- --platform ios_device --extra True"
+"flow:ios_device": "npm run flow -- --platform ios_device"
 }
-```    
+```
 
 Launch the setup script once:
 ```shell
     npm run flow-setup
 ```
 
+The host needs only `adb` (Android) or Xcode command line tools (iOS). Measure **release builds**
+(Android release APK, iOS Release configuration with Development signing).
+The script launches the app with the FlowDiagram flag and a fresh run id, pulls the JSON Lines run file
+the app wrote, and builds the CSV, averages and PNG. Raw run files are kept in `<output-dir>/<date>/raw/`.
+See `docs/v2/phase4-python.md` for details.
+
 ## Launch Measurement Flow
 
-### Android
 ```shell
-    npm run flow:android
-``` 
-
-Launch with extras: 
-```shell
-    npm run flow:android_extra
-``` 
-
-### iOS Simulator
-```shell
-    npm run flow:ios_simulator
+    npm run flow:android -- --launch_times 10
+    npm run flow:ios_simulator -- --launch_times 10
+    npm run flow:ios_device -- --launch_times 10 --udid <udid>
+    npm run flow -- --from-dir output/26-11-24/raw      # rebuild reports from saved run files, no device
 ```
 
-Launch with launch argument: 
-```shell
-    npm run flow:ios_simulator_extra
-``` 
-
-
-### iOS Real Device
-```shell
-    npm run flow:ios_device
-```
-
-Launch with launch argument: 
-```shell
-    npm run flow:ios_device_extra
-``` 
-
+Emulator and simulator results are labeled "functional, not representative". Use physical devices for numbers.
 
 ## Configuration Options
-The measurement script supports several configuration options to customize its behavior. Below are the available options:
 
 ```
-  usage: main.py [-h] [--platform {android,ios_device,ios_simulator}] [--output-dir OUTPUT_DIR] 
-                 [--bundle_id BUNDLE_ID] [--wait_time WAIT_TIME] [--launch_times LAUNCH_TIMES] [--package PACKAGE]
-                 [--activity ACTIVITY] [--extra EXTRA] [--open_csv OPEN_CSV] [--open_png OPEN_PNG]
-  
-  options:
-    -h, --help            show this help message and exit
-    --platform {android,ios_device,ios_simulator}
-                          Platform to run measurements on. (Default: android)
-    --output-dir OUTPUT_DIR
-                          Directory to save results. (Default: output)
-    --bundle_id BUNDLE_ID
-                          iOS Bundle ID. (Default: org.reactjs.native.example.FlowDiagram)
-    --wait_time WAIT_TIME
-                          Wait time after app launch in seconds. (Default: 10)
-    --launch_times LAUNCH_TIMES
-                          How many times to launch the app. (Default: 1)
-    --package PACKAGE     Android package name. (Default: com.flowdiagram)
-    --activity ACTIVITY   Android activity full name. (Default: com.flowdiagram.MainActivity)
-    --extra EXTRA         Extra Intent / Bundle Settings (Default: False)
-    --open_csv OPEN_CSV   Should open CSV with results (Default: False)
-    --open_png OPEN_PNG   Extra Should open PNG with results (Default: False)
+  usage: main.py [-h] [--platform {android,ios_device,ios_simulator,auto}] [--output-dir OUTPUT_DIR]
+                 [--launch_times N] [--package PACKAGE] [--activity ACTIVITY] [--bundle_id BUNDLE_ID]
+                 [--serial SERIAL] [--udid UDID] [--compile-mode {speed-profile,speed,verify,none}]
+                 [--t0 {process_start,app_init}] [--sink {auto,downloads}] [--allow-debuggable]
+                 [--wait_time SECONDS] [--poll-interval SECONDS] [--stable-polls N] [--timeout SECONDS]
+                 [--from-dir DIR] [--open_csv OPEN_CSV] [--open_png OPEN_PNG]
 ```
 
+| Option | Default | Meaning |
+|---|---|---|
+| `--platform` | `android` | Target. `auto` picks the only ready target. |
+| `--launch_times` | 1 | Number of cold launches. |
+| `--serial` / `--udid` | auto | Pick the Android device or the iOS device/simulator when several are connected. |
+| `--compile-mode` | `speed-profile` | Android dexopt mode applied before measuring. `none` keeps the current state. |
+| `--t0` | `process_start` | Time origin. `app_init` gives numbers comparable with v1. |
+| `--wait_time` | 10 | Seconds to wait after launch before the first fetch. |
+| `--poll-interval`, `--stable-polls`, `--timeout` | 1, 2, 60 | Completion detection when the app wrote no `run_end`. |
+| `--sink` | `auto` | Android run file location (`downloads` forces the Download fallback). |
+| `--allow-debuggable` | off | Measure a debug build anyway. |
+| `--from-dir` | | Build reports from saved `*.jsonl` files. |
 
-
+The v1 `--extra` flag is ignored (the flag is always passed). Logcat / os_log collection was removed.
