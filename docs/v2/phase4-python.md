@@ -24,7 +24,7 @@ Flags: `--platform {android,ios_device,ios_simulator,auto}`, `--output-dir`, `--
 ## Decisions and deviations
 
 - Completion: wait `--wait_time` (default 10 s), then poll until the last line is `run_end` or the file is unchanged for `--stable-polls` polls; hard timeout 60 s returns a partial file with a warning (error if no file).
-- Android: primary path `Android/data/<pkg>/files/flowdiagram/runs/`, fallback `Download/flowdiagram/<pkg>/` (also forced by `--sink downloads`). Compile mode applied then force-stop. Screen timeout is read and restored, not hardcoded.
+- Android: primary path `Android/data/<pkg>/files/flowdiagram/runs/`, fallback `Download/flowdiagram/<pkg>/` (also forced by `--sink downloads`). The console prints once per run which location the file was fetched from, plus a note when `auto` fell back to Download. Compile mode applied then force-stop. Screen timeout is read and restored, not hardcoded.
 - iOS device cannot delete remote files or hold the screen awake; app retention (newest 20) bounds growth. Simulator screen-lock hack dropped.
 - Debuggable or debug builds are fatal unless `--allow-debuggable`.
 - Failed iterations are skipped; exit code 1 only if no run is usable. CSV REPEAT shows usable runs.

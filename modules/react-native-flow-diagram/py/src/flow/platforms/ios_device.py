@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from platforms.base import (
-    IOS_FLAG_ARG, IOS_RUN_ID_ARG, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, error_text,
+    IOS_FLAG_ARG, IOS_RUN_ID_ARG, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, AmbiguousTarget, error_text,
     parse_json_output, run_command,
 )
 
@@ -33,11 +33,13 @@ class IosDevicePlatform(Platform):
         if self.udid:
             if self.udid not in names and not any(d["identifier"] == self.udid for d in physical):
                 raise PlatformError(f"iOS device {self.udid} was not found. Known: {list(names) or 'none'}")
-        elif len(names) != 1:
-            hint = "Connect and unlock a device." if not names else \
-                "Several devices are known (" + ", ".join(f"{n} {u}" for u, n in names.items()) + \
-                "). Pick one with --udid."
-            raise PlatformError(f"Expected exactly one physical iOS device. {hint}")
+        elif not names:
+            raise PlatformError("Expected exactly one physical iOS device. Connect and unlock a device.")
+        elif len(names) > 1:
+            raise AmbiguousTarget(
+                "Expected exactly one physical iOS device. Several devices are known ("
+                + ", ".join(f"{n} {u}" for u, n in names.items()) + "). Pick one with --udid.",
+                "--udid", list(names))
         else:
             self.udid = next(iter(names))
 
@@ -60,6 +62,9 @@ class IosDevicePlatform(Platform):
             "device", "process", "launch", "-q", "--json-output", "-", "--terminate-existing",
             "--device", self.udid, self.params.bundle_id, "--", IOS_FLAG_ARG, IOS_RUN_ID_ARG, run_id)
         if result.returncode != 0:
+            detail = f"{result.stderr}\n{result.stdout}".lower()
+            if "locked" in detail or "unlocked" in detail:
+                raise PlatformError(f"iOS device {self.udid} is locked. Unlock it (and keep it unlocked) and retry.")
             raise PlatformError(f"devicectl launch failed (phone locked or developer trust missing?): "
                                 f"{error_text(result)}")
         try:

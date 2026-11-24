@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from platforms.base import (
-    LAUNCH_FLAG_NAME, LAUNCH_RUN_ID_NAME, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, error_text, run_command,
+    LAUNCH_FLAG_NAME, LAUNCH_RUN_ID_NAME, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, AmbiguousTarget, error_text, run_command,
 )
 
 SINK_EXTRA = "FlowDiagramSink"
@@ -23,6 +23,7 @@ class AndroidPlatform(Platform):
         self.serial = params.serial
         self._old_screen_timeout = None
         self._remote_hit = None  # which remote location last had the file
+        self._announced = False  # the fetch source is printed once per run
 
     # ---- paths
     @property
@@ -62,10 +63,12 @@ class AndroidPlatform(Platform):
             if self.serial not in ready:
                 state = dict(devices).get(self.serial, "not connected")
                 raise PlatformError(f"Android device {self.serial} is {state}. Connected: {ready or 'none'}")
-        elif len(ready) != 1:
-            hint = "Connect a device or start an emulator." if not ready else \
-                f"Several devices are connected ({', '.join(ready)}). Pick one with --serial."
-            raise PlatformError(f"Expected exactly one Android device. {hint}")
+        elif not ready:
+            raise PlatformError("Expected exactly one Android device. Connect a device or start an emulator.")
+        elif len(ready) > 1:
+            raise AmbiguousTarget(
+                f"Expected exactly one Android device. Several devices are connected ({', '.join(ready)}). "
+                "Pick one with --serial.", "--serial", ready)
         else:
             self.serial = ready[0]
         self.emulated = self.serial.startswith("emulator-")
@@ -122,6 +125,7 @@ class AndroidPlatform(Platform):
         if self.params.sink == "downloads":
             extras += ["--es", SINK_EXTRA, "downloads"]
         self._remote_hit = None
+        self._announced = False
         result = self.shell("am", "start", "-W", "-S", "-n", f"{self.params.package}/{self.params.activity}",
                             *extras)
         out = result.stdout + result.stderr
@@ -140,8 +144,20 @@ class AndroidPlatform(Platform):
             result = self.run(self.adb("pull", remote, str(dest)), timeout=60)
             if result.returncode == 0 and dest.exists():
                 self._remote_hit = remote
+                self._announce(remote)
                 return dest
         raise RunFileNotFound(f"{run_id}.jsonl not found in {self.primary_dir} or {self.downloads_dir}")
+
+    def _announce(self, remote):
+        if self._announced:
+            return
+        self._announced = True
+        if remote.startswith(self.downloads_dir):
+            print(f"Run file fetched from Download: {remote}")
+            if self.params.sink != "downloads":
+                print(f"Note: the primary path {self.primary_dir} was not used, the app fell back to Download.")
+        else:
+            print(f"Run file fetched from Android/data: {remote}")
 
     def stop(self):
         self.shell("am", "force-stop", self.params.package, timeout=30)

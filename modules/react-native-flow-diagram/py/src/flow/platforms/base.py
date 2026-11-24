@@ -15,6 +15,15 @@ class PlatformError(Exception):
     """A device, tool or app problem that the user has to fix."""
 
 
+class AmbiguousTarget(PlatformError):
+    """Several devices of this platform are ready and the user has to pick one with `flag`."""
+
+    def __init__(self, message, flag, choices):
+        super().__init__(message)
+        self.flag = flag
+        self.choices = choices  # list of "id" or "id name" strings
+
+
 class RunFileNotFound(PlatformError):
     """The run file is not (yet) on the device. Normal while the app is still starting."""
 

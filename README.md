@@ -165,7 +165,7 @@ npm run flow:android -- --serial R5CT123 --package com.myapp --activity com.myap
 ```
 The app is launched with `am start -W -S` and the flag. The run file is read from
 `Android/data/<package>/files/flowdiagram/runs/`, with a fallback to `Download/flowdiagram/<package>/` (force it with
-`--sink downloads`). The report also contains the system `TotalTime` from `am start -W`.
+`--sink downloads`). The console prints once per run where the file came from (`Run file fetched from Download: ...` or `... from Android/data: ...`). The report also contains the system `TotalTime` from `am start -W`.
 
 ### iOS simulator
 ```shell
@@ -223,7 +223,8 @@ A failed iteration is skipped. The CLI exits with code 1 only if no run is usabl
 | "No run file found" or a timeout | The app was built without the integration, `FlowDiagram.onIntent` is missing, or the app crashed. Increase `--wait_time`. |
 | Android: no file in `Android/data` | Some OEMs block shell access. The CLI falls back to `Download/flowdiagram/<package>/`. Force it with `--sink downloads`. |
 | Android: "secure lock" error | Unlock the device and disable the secure lock screen while measuring. A swipe lock is dismissed automatically. |
-| Several Android or iOS targets | Pass `--serial` or `--udid`. |
+| Several Android or iOS targets (`--platform auto`) | The error lists every ready target and the flag to pick it, for example `android (emulator-5554, RFCXB13QAVF; pass --platform android --serial <id>)`. |
+| Device is locked | The CLI stops with "... is locked. Unlock it (and keep it unlocked) and retry." and exit code 1. |
 | iOS device: launch failed | Unlock the phone, trust the computer, trust the developer certificate (Settings, General, VPN and Device Management), and enable Developer Mode. |
 | iOS device: copy failed | The build must be Release with Development signing (`get-task-allow`). Distribution signing blocks container access. |
 | "debuggable" error | Install the release variant, or pass `--allow-debuggable` for a non representative run. |

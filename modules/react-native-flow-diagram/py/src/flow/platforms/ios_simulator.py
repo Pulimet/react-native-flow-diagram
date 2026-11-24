@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 
 from platforms.base import (
-    IOS_FLAG_ARG, IOS_RUN_ID_ARG, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, error_text,
+    IOS_FLAG_ARG, IOS_RUN_ID_ARG, RUN_DIR_NAME, Platform, PlatformError, RunFileNotFound, AmbiguousTarget, error_text,
     run_command,
 )
 
@@ -37,11 +37,13 @@ class IosSimulatorPlatform(Platform):
         if self.udid:
             if self.udid not in udids:
                 raise PlatformError(f"Simulator {self.udid} is not booted. Booted: {list(udids) or 'none'}")
-        elif len(udids) != 1:
-            hint = "Boot a simulator first." if not udids else \
-                "Several simulators are booted (" + ", ".join(f"{n} {u}" for u, n in udids.items()) + \
-                "). Pick one with --udid."
-            raise PlatformError(f"Expected exactly one booted iOS simulator. {hint}")
+        elif not udids:
+            raise PlatformError("Expected exactly one booted iOS simulator. Boot a simulator first.")
+        elif len(udids) > 1:
+            raise AmbiguousTarget(
+                "Expected exactly one booted iOS simulator. Several simulators are booted ("
+                + ", ".join(f"{n} {u}" for u, n in udids.items()) + "). Pick one with --udid.",
+                "--udid", list(udids))
         else:
             self.udid = next(iter(udids))
         bundle = self.params.bundle_id

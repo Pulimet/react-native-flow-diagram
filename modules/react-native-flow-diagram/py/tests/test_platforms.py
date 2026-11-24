@@ -113,6 +113,44 @@ def test_android_fetch_primary_then_downloads_fallback(tmp_path):
     assert runner.lines()[-1] == f"adb -s RFCXB13QAVF shell rm -f {fallback} {primary}"
 
 
+def _fetch_with(p, runner, tmp_path, ok_path):
+    dest = tmp_path / "r.jsonl"
+    runner.when(f"pull {ok_path}", effect=lambda cmd: dest.write_text("x"))
+    runner.when(" pull ", returncode=1)
+    p.fetch("r", dest)
+    p.fetch("r", dest)  # a second poll must not print again
+
+
+def test_android_fetch_reports_primary_once(tmp_path, capsys):
+    p, runner = ready_android()
+    capsys.readouterr()
+    primary = f"/sdcard/Android/data/{PKG}/files/flowdiagram/runs/r.jsonl"
+    _fetch_with(p, runner, tmp_path, primary)
+    out = capsys.readouterr().out
+    assert out.count("Run file fetched from Android/data: " + primary) == 1
+    assert "Download" not in out
+
+
+def test_android_fetch_reports_forced_downloads(tmp_path, capsys):
+    p, runner = ready_android(sink="downloads")
+    capsys.readouterr()
+    fallback = f"/sdcard/Download/flowdiagram/{PKG}/r.jsonl"
+    _fetch_with(p, runner, tmp_path, fallback)
+    out = capsys.readouterr().out
+    assert out.count("Run file fetched from Download: " + fallback) == 1
+    assert "fell back" not in out
+
+
+def test_android_fetch_reports_auto_fallback(tmp_path, capsys):
+    p, runner = ready_android()
+    capsys.readouterr()
+    fallback = f"/sdcard/Download/flowdiagram/{PKG}/r.jsonl"
+    _fetch_with(p, runner, tmp_path, fallback)
+    out = capsys.readouterr().out
+    assert out.count("Run file fetched from Download: " + fallback) == 1
+    assert out.count("primary path") == 1 and "fell back" in out
+
+
 def test_android_fetch_missing_raises(tmp_path):
     p, runner = ready_android()
     runner.when(" pull ", returncode=1)
@@ -207,7 +245,14 @@ def test_ios_device_validate_errors():
         ios_device(FakeRunner().when("list devices", DEVICES).when("info apps", json.dumps({"result": {"apps": []}}))
                    ).validate()
     with pytest.raises(PlatformError, match="launch failed"):
-        p = ios_device(FakeRunner().when("process launch", returncode=1, stderr="device is locked"), udid="U")
+        p = ios_device(FakeRunner().when("process launch", returncode=1, stderr="trust missing"), udid="U")
+        p.launch("r")
+
+
+def test_ios_device_launch_locked_reports_locked():
+    stderr = "NSLocalizedFailureReason = Unable to launch X because the device was not, or could not be, unlocked."
+    p = ios_device(FakeRunner().when("process launch", returncode=1, stderr=stderr), udid="U")
+    with pytest.raises(PlatformError, match="iOS device U is locked"):
         p.launch("r")
 
 
@@ -219,3 +264,47 @@ def test_auto_picks_only_ready_target():
     with pytest.raises(PlatformError, match="No target is ready"):
         create_platform(make_params(platform="auto"), FakeRunner().when("list devices", json.dumps(
             {"result": {"devices": []}})))
+
+
+ADB_TWO = "List of devices attached\nemulator-5554\tdevice\nRFCXB13QAVF\tdevice\n\n"
+NO_SIM = json.dumps({"devices": {}})
+ONE_SIM = json.dumps({"devices": {"iOS-18": [{"udid": "SIM-1", "name": "iPhone 16", "state": "Booted"}]}})
+NO_DEVICES = json.dumps({"result": {"devices": []}})
+
+
+def auto_runner(adb, sim=NO_SIM, devices=NO_DEVICES):
+    return FakeRunner().when("adb devices", adb).when("pm list packages", f"package:{PKG}\n") \
+        .when("list devices booted", sim).when("get_app_container", "/tmp/c") \
+        .when("list devices", devices).when("info apps", APPS)
+
+
+def test_auto_one_android_device_is_selected():
+    assert create_platform(make_params(platform="auto"), auto_runner(ADB_ONE)).name == "android"
+
+
+def test_auto_several_android_devices_lists_serials_and_flag():
+    with pytest.raises(PlatformError) as e:
+        create_platform(make_params(platform="auto"), auto_runner(ADB_TWO))
+    msg = str(e.value)
+    assert "android (emulator-5554, RFCXB13QAVF; pass --platform android --serial <id>)" in msg
+
+
+def test_auto_android_plus_ios_lists_every_target():
+    with pytest.raises(PlatformError) as e:
+        create_platform(make_params(platform="auto"), auto_runner(ADB_TWO, sim=ONE_SIM, devices=DEVICES))
+    msg = str(e.value)
+    assert "android (emulator-5554, RFCXB13QAVF; pass --platform android --serial <id>)" in msg
+    assert "ios_simulator (pass --platform ios_simulator)" in msg
+    assert "ios_device (pass --platform ios_device)" in msg
+
+
+def test_auto_several_ios_simulators_need_udid():
+    two = json.dumps({"devices": {"iOS-18": [{"udid": "S1", "name": "A", "state": "Booted"},
+                                              {"udid": "S2", "name": "B", "state": "Booted"}]}})
+    with pytest.raises(PlatformError, match=r"ios_simulator \(S1, S2; pass --platform ios_simulator --udid <id>\)"):
+        create_platform(make_params(platform="auto"), auto_runner("List of devices attached\n", sim=two))
+
+
+def test_auto_nothing_ready():
+    with pytest.raises(PlatformError, match="No target is ready"):
+        create_platform(make_params(platform="auto"), auto_runner("List of devices attached\n"))
