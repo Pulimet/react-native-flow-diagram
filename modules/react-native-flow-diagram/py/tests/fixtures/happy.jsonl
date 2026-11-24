@@ -1,0 +1,8 @@
+{"type":"run_start","schema":2,"run_id":"20261124-083600-it01","platform":"android","app_id":"com.flowdiagram","app_version":"1.0","build":"release","debuggable":false,"os":"14","device":"Pixel 8","t0":"process_start","app_init_ms":180.0,"prewarmed":false}
+{"type":"event","seq":1,"t_ms":200.0,"src":"AD","mode":"SYNC","level":"DEBUG","msg":"MainApplication.onCreate -> Start","thread":"main"}
+{"type":"event","seq":2,"t_ms":250.4,"src":"AD","mode":"ASYNC","level":"DEBUG","msg":"Worker -> Queued","thread":"pool-1"}
+{"type":"event","seq":3,"t_ms":300.0,"src":"AD","mode":"SYNC","level":"DEBUG","msg":"MainActivity.onCreate -> Start","thread":"main"}
+{"type":"net","seq":4,"t_ms":410.2,"phase":"REQ","req_id":3,"url":"https://example.com/api"}
+{"type":"net","seq":5,"t_ms":702.9,"phase":"RSP","req_id":3,"url":"https://example.com/api","status":200,"dur_ms":292}
+{"type":"event","seq":6,"t_ms":800.0,"src":"RN","mode":"SYNC","level":"DEBUG","msg":"App.tsx -> Render","thread":"js"}
+{"type":"run_end","seq":7,"t_ms":10012.0,"reason":"flush"}

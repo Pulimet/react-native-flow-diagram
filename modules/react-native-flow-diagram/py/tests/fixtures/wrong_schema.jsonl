@@ -1,0 +1,2 @@
+{"type":"run_start","schema":1,"run_id":"r1","platform":"android"}
+{"type":"event","seq":1,"t_ms":1.0,"src":"AD","mode":"SYNC","msg":"A"}

@@ -191,7 +191,7 @@ Added: `--from-dir` regenerates reports from saved raw files without a device; p
 | Phase | Scope | Exit criteria |
 |---|---|---|
 | 0. Spike (1-2 days) | Hello-world file write + pull, **release builds**, on Android device (Android 11-15, at least one Samsung), iOS device (Release + Dev signing), emulator, simulator | Same file retrieved on all 4 targets without debuggable / Debug build |
-| 1. Schema + Python reader | JSONL schema v2, fixtures, `reader.py`, `normalize.py` (v1 duration rules), pytest | v1-style CSV/PNG produced from fixtures |
+| 1. Schema + Python reader (**done**, see `schema.md`) | JSONL schema v2, fixtures, `reader.py`, `normalize.py` (v1 duration rules), pytest | v1-style CSV/PNG produced from fixtures |
 | 2. Android recorder | Buffer, writer, intent handling, process-start t0, interceptor with `req_id`, RN module, consumer R8 rules | Events from `Application.onCreate` present in flag mode, release + R8 |
 | 3. iOS recorder | Same in Swift, prewarm guard, `LoggingURLProtocol` with `req_id`, ObjC bridge | Output parity with Android |
 | 4. Platform fetchers + run loop | `android.py`, `ios_simulator.py`, `ios_device.py`, `--compile-mode`, build checks, raw archiving | `npm run flow:<target>` works on 4 targets, N launches |
