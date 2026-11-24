@@ -6,6 +6,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import net.alexandroid.flowdiagram.LogTime
+import net.alexandroid.flowdiagram.RunFileWriter
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -31,6 +32,7 @@ class MainActivity : ReactActivity(), CoroutineScope {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LogTime.onIntent(intent)
+        RunFileWriter.start(applicationContext, intent)
         LogTime.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
         makeNetworkRequest()
         initAsyncLibrary()

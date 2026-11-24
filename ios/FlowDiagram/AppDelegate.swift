@@ -9,6 +9,7 @@ import Foundation
 class AppDelegate: RCTAppDelegate {
   override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FlowDiagramUtil.onAppLaunched(true)
+    RunFileWriter.start()
     FlowDiagramUtil.logSync(message: "AppDelegate.didFinishLaunchingWithOptions -> Start (Sync Native Example)")
   
     self.moduleName = "FlowDiagram"
