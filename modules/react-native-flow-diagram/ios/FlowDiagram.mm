@@ -11,11 +11,11 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)logAsync:(nonnull NSString *)msg level:(double)level {
-    [FlowDiagramUtil logAsyncObjCWithMessage:msg logType:1 logLevel:level];
+    [FlowDiagramRecorder logAsyncObjCWithMessage:msg logType:1 logLevel:level];
 }
 
 - (void)logSync:(nonnull NSString *)msg level:(double)level { 
-    [FlowDiagramUtil logSyncObjCWithMessage:msg logType:1 logLevel:level];
+    [FlowDiagramRecorder logSyncObjCWithMessage:msg logType:1 logLevel:level];
 }
 
 @end

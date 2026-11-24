@@ -5,6 +5,7 @@ class LoggingURLProtocol: URLProtocol {
     private var sessionDataTask: URLSessionDataTask?
     private var startTime: Date?
     private var urlString: String?
+    private var reqId = 0
 
     override class func canInit(with request: URLRequest) -> Bool {
         // Prevent infinite recursion
@@ -16,7 +17,8 @@ class LoggingURLProtocol: URLProtocol {
         let urlString = url.absoluteString
 
         // Filter out URLs we don't want to handle
-        if urlString.contains("autoproxy") || urlString.contains("localhost") || urlString.contains("192.168.1") {
+        let skipped = ["symbolicate", "autoproxy", "localhost", "10.0.", "192.168."]
+        if skipped.contains(where: { urlString.contains($0) }) {
             return false
         }
 
@@ -37,7 +39,7 @@ class LoggingURLProtocol: URLProtocol {
         urlString = url.absoluteString
 
         // Log the network request
-        FlowDiagramUtil.logNetwork(urlString!, logType: .NE_REQUEST)
+        reqId = FlowDiagram.netRequest(url: url.absoluteString)
         startTime = Date()
 
         // Mark as handled to avoid recursion
@@ -59,8 +61,10 @@ class LoggingURLProtocol: URLProtocol {
             if let httpResponse = response as? HTTPURLResponse {
                 statusCode = httpResponse.statusCode
             }
-            // Log the network response
-            FlowDiagramUtil.logNetwork(self.urlString ?? "", logType: .NE_RESPONSE, responseCode: Int32(statusCode), elapsedTime: elapsedTime)
+            // A failed call leaves a request without a response
+            if response != nil {
+                FlowDiagram.netResponse(reqId: self.reqId, url: self.urlString ?? "", status: statusCode, durMs: elapsedTime)
+            }
 
             // Forward data to the client
             if let response = response {
@@ -74,6 +78,7 @@ class LoggingURLProtocol: URLProtocol {
             } else {
                 self.client?.urlProtocolDidFinishLoading(self)
             }
+            session.finishTasksAndInvalidate()
         }
         sessionDataTask?.resume()
     }
