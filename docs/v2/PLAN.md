@@ -196,7 +196,7 @@ Added: `--from-dir` regenerates reports from saved raw files without a device; p
 | 3. iOS recorder (**done**, see `phase3-ios.md`) | Same in Swift, prewarm guard, `LoggingURLProtocol` with `req_id`, ObjC bridge | Output parity with Android |
 | 4. Platform fetchers + run loop (**done**, see `phase4-python.md`) | `android.py`, `ios_simulator.py`, `ios_device.py`, `--compile-mode`, build checks, raw archiving | `npm run flow:<target>` works on 4 targets, N launches |
 | 5. Hardening (**done**, see `phase5-hardening.md`) | Download fallback, multi-device `--serial/--udid`, overhead measurement, clear errors | Test matrix green, overhead under 2% |
-| 6. Docs + release | README v1 → v2 migration guide, sample app release build instructions, version 2.0.0 | Published package |
+| 6. Docs + release (**done**) | README v1 → v2 migration guide (`MIGRATION.md`), CHANGELOG, version 2.0.0 | Ready to publish (see CHANGELOG, not yet published) |
 
 ## 7. Test matrix (release builds)
 | Target | Fetch works | Flag off: no file, no overhead | 10 launches | Early events (`Application.onCreate`) |
