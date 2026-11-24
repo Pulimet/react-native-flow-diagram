@@ -137,15 +137,27 @@ final class Recorder {
         }
     }
 
+    static let maxFieldChars = 4_096
+
+    /// Caps a field so one huge message cannot blow up memory or the file.
+    static func cap(_ s: String, _ max: Int = maxFieldChars) -> String {
+        if s.utf8.count <= max { return s }  // O(1) fast path for native strings
+        let total = s.count
+        if total <= max { return s }
+        return String(s.prefix(max)) + "...[+\(total - max) chars]"
+    }
+
     func event(src: String, mode: String, level: String, msg: String) {
         let t = clock() - t0Nanos
         let thread = Recorder.threadName()
-        add(t) { .event(src: src, mode: mode, level: level, msg: msg, thread: thread) }
+        let capped = Recorder.cap(msg)
+        add(t) { .event(src: src, mode: mode, level: level, msg: capped, thread: thread) }
     }
 
     func net(phase: String, reqId: Int, url: String, status: Int = 0, durMs: Int64 = 0) {
         let t = clock() - t0Nanos
-        add(t) { .net(phase: phase, reqId: reqId, url: url, status: status, durMs: durMs) }
+        let capped = Recorder.cap(url)
+        add(t) { .net(phase: phase, reqId: reqId, url: capped, status: status, durMs: durMs) }
     }
 
     func newRequestId() -> Int {

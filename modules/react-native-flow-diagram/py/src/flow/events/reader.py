@@ -12,7 +12,7 @@ class RunFileError(Exception):
 def read_run(path, expected_run_id: Optional[str] = None) -> Run:
     path = Path(path)
     try:
-        text = path.read_text(encoding="utf-8")
+        text = path.read_bytes().decode("utf-8", errors="replace")
     except OSError as e:
         raise RunFileError(f"{path}: cannot read run file: {e}") from e
     return parse_run(text, expected_run_id, source=str(path))

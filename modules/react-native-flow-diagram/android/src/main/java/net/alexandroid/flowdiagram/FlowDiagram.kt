@@ -88,7 +88,7 @@ object FlowDiagram {
         }
         val runId = intent?.getStringExtra(EXTRA_RUN_ID)?.takeIf { isSafeRunId(it) } ?: timestampRunId()
         val downloads = intent?.getStringExtra(EXTRA_SINK) == SINK_DOWNLOADS
-        rec.enable(header(ctx, runId)) { Sinks.open(ctx, runId, downloads) }
+        rec.enable({ header(ctx, runId) }) { Sinks.open(ctx, runId, downloads) }
     }
 
     @JvmStatic

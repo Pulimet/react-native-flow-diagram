@@ -103,4 +103,83 @@ class RecorderTest {
         val line = JsonLines.encode(Record.Net(9, 5_000_000L, "RSP", 3, "https://x", 200, 292))
         assertEquals("{\"type\":\"net\",\"seq\":9,\"t_ms\":5.0,\"phase\":\"RSP\",\"req_id\":3,\"url\":\"https://x\",\"status\":200,\"dur_ms\":292}", line)
     }
+
+    @Test
+    fun longMessageIsCappedWithoutSplittingSurrogatePair() {
+        val r = Recorder({ now }, 0L, executor, maxFieldChars = 10)
+        val sink = ListSink()
+        r.enable("H") { sink }
+        r.event("AD", "SYNC", "DEBUG", "a".repeat(9) + "\uD83D\uDE00" + "b".repeat(100))
+        r.event("AD", "SYNC", "DEBUG", "short")
+        drain()
+        assertTrue(sink.lines[1].contains("\"msg\":\"aaaaaaaaa...[+102 chars]\""))
+        assertTrue(sink.lines[2].contains("\"msg\":\"short\""))
+    }
+
+    @Test
+    fun hostileCharactersNeverBreakTheLine() {
+        val nasty = "a\u0000b\u001f\u2028\u2029\r\n\u007f\uD800 end"
+        val line = JsonLines.encode(Record.Event(1, 0, "AD", "SYNC", "DEBUG", nasty, "t\nx"))
+        assertTrue(line.none { it == '\n' || it == '\r' || it == '\u2028' || it == '\u2029' })
+        assertTrue(line.contains("\\u0000") && line.contains("\\u2028"))
+    }
+
+    @Test
+    fun failingFlushAndWriteNeverEscapeTheWriterThread() {
+        val uncaught = java.util.concurrent.atomic.AtomicReference<Throwable?>()
+        val ex = Executors.newSingleThreadScheduledExecutor { run ->
+            Thread(run).apply { setUncaughtExceptionHandler { _, e -> uncaught.set(e) } }
+        }
+        val failing = object : Sink {
+            override fun write(line: String) { throw java.io.IOException("disk full") }
+            override fun flush() { throw java.io.IOException("disk full") }
+            override fun close() { throw java.io.IOException("disk full") }
+        }
+        val r = Recorder({ now }, 0L, ex)
+        r.enable("H") { failing }
+        r.event("AD", "SYNC", "DEBUG", "a")
+        r.flush()
+        r.end("flush")
+        ex.submit {}.get(5, TimeUnit.SECONDS)
+        r.event("AD", "SYNC", "DEBUG", "after")
+        ex.shutdown()
+        assertTrue(ex.awaitTermination(5, TimeUnit.SECONDS))
+        assertEquals(null, uncaught.get())
+    }
+
+    @Test
+    fun throwingSinkOpenerDisablesWithoutCrash() {
+        val r = recorder()
+        r.enable("H") { throw IllegalStateException("boom") }
+        drain()
+        assertEquals(Recorder.State.DISABLED, r.state)
+    }
+
+    @Test
+    fun concurrentThreadsKeepSeqUniqueAndOrdered() {
+        val r = recorder()
+        val sink = ListSink()
+        r.enable("H") { sink }
+        val threads = (0 until 8).map { t ->
+            Thread { repeat(500) { r.event("AD", "ASYNC", "DEBUG", "t$t-$it") } }
+        }
+        threads.forEach { it.start() }
+        threads.forEach { it.join() }
+        drain()
+        assertEquals(4001, sink.lines.size)
+        val seqs = sink.lines.drop(1).map { Regex("\"seq\":(\\d+)").find(it)!!.groupValues[1].toInt() }
+        assertEquals((1..4000).toList(), seqs)
+    }
+
+    @Test
+    fun totalLimitEndsRun() {
+        val r = recorder(maxTotal = 3)
+        val sink = ListSink()
+        r.enable("H") { sink }
+        repeat(10) { r.event("AD", "SYNC", "DEBUG", "m$it") }
+        drain()
+        assertEquals(5, sink.lines.size)
+        assertTrue(sink.lines.last().contains("buffer_limit"))
+        assertEquals(Recorder.State.ENDED, r.state)
+    }
 }

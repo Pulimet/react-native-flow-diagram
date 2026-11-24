@@ -1,4 +1,5 @@
 import re
+import time
 from pathlib import Path
 
 from platforms.base import (
@@ -85,6 +86,7 @@ class AndroidPlatform(Platform):
     def prepare(self):
         pkg = self.params.package
         self.shell("input", "keyevent", "KEYCODE_WAKEUP", timeout=30)
+        self.ensure_unlocked()
         current = self.shell("settings", "get", "system", SCREEN_TIMEOUT_KEY, timeout=30).stdout.strip()
         self._old_screen_timeout = current if current.isdigit() else SCREEN_TIMEOUT_DEFAULT
         self.shell("settings", "put", "system", SCREEN_TIMEOUT_KEY, SCREEN_TIMEOUT_STAY_ON, timeout=30)
@@ -100,6 +102,20 @@ class AndroidPlatform(Platform):
         else:
             print("Compile mode 'none': leaving the installed compilation state as is.")
         self.stop()
+
+    def is_locked(self):
+        out = self.shell("dumpsys", "window", timeout=30).stdout
+        return "isKeyguardShowing=true" in out or "mDreamingLockscreen=true" in out
+
+    def ensure_unlocked(self):
+        """A locked screen delays or blocks the first activity. Dismiss a plain swipe lock, fail on a secure one."""
+        if not self.is_locked():
+            return
+        self.shell("wm", "dismiss-keyguard", timeout=30)
+        self.shell("input", "keyevent", "KEYCODE_MENU", timeout=30)
+        time.sleep(1)
+        if self.is_locked():
+            raise PlatformError(f"Android device {self.serial} is locked. Unlock it (and keep it unlocked) and retry.")
 
     def launch(self, run_id):
         extras = ["--ez", LAUNCH_FLAG_NAME, "true", "--es", LAUNCH_RUN_ID_NAME, run_id]

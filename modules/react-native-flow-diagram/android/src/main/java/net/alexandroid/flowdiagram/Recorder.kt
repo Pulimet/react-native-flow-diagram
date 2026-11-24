@@ -21,8 +21,21 @@ internal class Recorder(
     private val executor: ScheduledExecutorService,
     private val maxPending: Int = 5_000,
     private val maxTotal: Int = 200_000,
-    private val flushDelayMs: Long = 200
+    private val flushDelayMs: Long = 200,
+    private val maxFieldChars: Int = MAX_FIELD_CHARS
 ) {
+    companion object {
+        const val MAX_FIELD_CHARS = 4_096
+
+        /** Caps a field so one huge message cannot blow up memory or the file. Never splits a surrogate pair. */
+        fun cap(s: String, max: Int): String {
+            if (s.length <= max) return s
+            var end = max
+            if (Character.isHighSurrogate(s[end - 1])) end--
+            return s.substring(0, end) + "...[+${s.length - end} chars]"
+        }
+    }
+
     enum class State { PENDING, ENABLED, DISABLED, ENDED }
 
     @Volatile
@@ -42,13 +55,15 @@ internal class Recorder(
         if (state.ordinal > State.ENABLED.ordinal) return
         val t = clockNanos() - t0Nanos
         val thread = Thread.currentThread().name
-        add { Record.Event(it, t, src, mode, level, msg, thread) }
+        val capped = cap(msg, maxFieldChars)
+        add { Record.Event(it, t, src, mode, level, capped, thread) }
     }
 
     fun net(phase: String, reqId: Int, url: String, status: Int = 0, durMs: Long = 0) {
         if (state.ordinal > State.ENABLED.ordinal) return
         val t = clockNanos() - t0Nanos
-        add { Record.Net(it, t, phase, reqId, url, status, durMs) }
+        val capped = cap(url, maxFieldChars)
+        add { Record.Net(it, t, phase, reqId, capped, status, durMs) }
     }
 
     private inline fun add(create: (Int) -> Record) {
@@ -75,21 +90,24 @@ internal class Recorder(
     }
 
     /** Starts writing: opens the sink on the writer thread, writes [header], then the buffered records. */
-    fun enable(header: String, openSink: () -> Sink?) {
+    fun enable(header: String, openSink: () -> Sink?) = enable({ header }, openSink)
+
+    /** [header] runs on the writer thread so the app's main thread does not pay for it. */
+    fun enable(header: () -> String, openSink: () -> Sink?) {
         synchronized(lock) {
             if (state != State.PENDING) return
             state = State.ENABLED
-            executor.execute {
+            submit {
                 sink = try {
                     openSink()
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     null
                 }
                 val s = sink
                 if (s == null) {
                     state = State.DISABLED
                 } else {
-                    writeLine(s, header)
+                    writeLine(s, header())
                 }
             }
             val buffered = pending ?: emptyList<Record>()
@@ -117,47 +135,76 @@ internal class Recorder(
 
     fun flush() {
         if (state == State.ENABLED || state == State.ENDED) {
-            try {
-                executor.execute { sink?.flush() }
-            } catch (_: java.util.concurrent.RejectedExecutionException) {
-            }
+            submit { sink?.flush() }
         }
     }
 
     private fun endLocked(reason: String) {
         enqueue(Record.End(++seq, clockNanos() - t0Nanos, reason))
         state = State.ENDED
-        executor.execute {
-            sink?.flush()
-            sink?.close()
-            sink = null
+        submit {
+            try {
+                sink?.flush()
+            } catch (_: Throwable) {
+            }
+            closeSink()
         }
     }
 
     private fun enqueue(record: Record) {
-        executor.execute {
-            val s = sink ?: return@execute
+        submit {
+            val s = sink ?: return@submit
             writeLine(s, JsonLines.encode(record))
+        }
+    }
+
+    /** Runs on the writer thread. Nothing thrown here may reach the thread's uncaught handler, that kills the app. */
+    private fun submit(task: () -> Unit) {
+        try {
+            executor.execute {
+                try {
+                    task()
+                } catch (_: Throwable) {
+                    closeSink()
+                    state = State.DISABLED
+                }
+            }
+        } catch (_: Throwable) {
+            // rejected: executor was shut down
+        }
+    }
+
+    private fun closeSink() {
+        val s = sink ?: return
+        sink = null
+        try {
+            s.close()
+        } catch (_: Throwable) {
         }
     }
 
     private fun writeLine(s: Sink, line: String) {
         try {
             s.write(line)
-        } catch (e: Exception) {
-            sink = null
+        } catch (e: Throwable) {
+            closeSink()
             state = State.DISABLED
             return
         }
         if (!flushScheduled) {
             flushScheduled = true
-            executor.schedule({
-                flushScheduled = false
-                try {
-                    sink?.flush()
-                } catch (_: Exception) {
-                }
-            }, flushDelayMs, TimeUnit.MILLISECONDS)
+            try {
+                executor.schedule({
+                    flushScheduled = false
+                    try {
+                        sink?.flush()
+                    } catch (_: Throwable) {
+                        closeSink()
+                        state = State.DISABLED
+                    }
+                }, flushDelayMs, TimeUnit.MILLISECONDS)
+            } catch (_: Throwable) {
+            }
         }
     }
 }
