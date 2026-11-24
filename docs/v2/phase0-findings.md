@@ -52,11 +52,25 @@ The script runs `simctl launch --terminate-running-process booted <bundle> --flo
 ## Issues
 
 - Xcode 27 fails to compile the `fmt` pod (`consteval ... is not a constant expression`) under C++20. Fixed in `ios/Podfile` post_install by building the `fmt` target as C++17.
-- `pod install` rewrites checksums in `ios/Podfile.lock` (path-dependent); not committed.
+- `pod install` updates `ios/Podfile.lock` after the Podfile change; committed to keep pods in sync.
 - ATS and permissions: no issue. App Documents needs no entitlement. The sample's HTTPS request is unaffected.
 - Release build bundles JS (`main.jsbundle`), no Metro needed.
 
-## Pending: physical device checks
+## Physical device results
+
+| Target | Device | Build | Result |
+|---|---|---|---|
+| Android primary path | Samsung SM-S928B, Android 17 (API 37) | Release APK, not debuggable | PASS |
+| Android Downloads fallback | Samsung SM-S928B, Android 17 (API 37) | Release APK, not debuggable | PASS |
+| iOS device | iPhone 16 Pro Max | Release, Apple Development (personal team) | PASS |
+
+iOS device notes:
+
+- The device must be registered in the team's profile (`-allowProvisioningDeviceRegistration`).
+- With a personal team the launch is denied ("profile has not been explicitly trusted") until Settings > General > VPN & Device Management > developer certificate > Trust. Uninstalling the app removes that trust; trust again after reinstalling.
+- Developer Mode must be on and the phone unlocked for build, install and launch.
+
+## How to run the physical device checks
 
 Android device (USB debugging on, release APK installed):
 
