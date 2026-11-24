@@ -1,12 +1,12 @@
 package com.flowdiagram
 
+import android.content.Intent
 import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import net.alexandroid.flowdiagram.LogTime
-import net.alexandroid.flowdiagram.RunFileWriter
+import net.alexandroid.flowdiagram.FlowDiagram
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -31,13 +31,17 @@ class MainActivity : ReactActivity(), CoroutineScope {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        LogTime.onIntent(intent)
-        RunFileWriter.start(applicationContext, intent)
-        LogTime.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
+        FlowDiagram.onIntent(intent)
+        FlowDiagram.logSync("MainActivity.onCreate -> Start - (Sync Native Example)")
         makeNetworkRequest()
         initAsyncLibrary()
         initSyncLibrary()
-        LogTime.logSync("MainActivity.onCreate -> End - (Sync Native Example)")
+        FlowDiagram.logSync("MainActivity.onCreate -> End - (Sync Native Example)")
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        FlowDiagram.onIntent(intent)
     }
 
     private fun makeNetworkRequest() {
@@ -47,11 +51,11 @@ class MainActivity : ReactActivity(), CoroutineScope {
         val okHttpClient = OkHttpClientProvider.getOkHttpClient()
         okHttpClient.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                LogTime.logAsync("MainActivity.makeNetworkRequest -> onFailure - (Async Native Example)")
+                FlowDiagram.logAsync("MainActivity.makeNetworkRequest -> onFailure - (Async Native Example)")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                LogTime.logAsync("MainActivity.makeNetworkRequest -> onResponse - (Async Native Example)")
+                FlowDiagram.logAsync("MainActivity.makeNetworkRequest -> onResponse - (Async Native Example)")
                 response.body?.close()
             }
         })
@@ -59,15 +63,15 @@ class MainActivity : ReactActivity(), CoroutineScope {
 
     private fun initAsyncLibrary() {
         launch {
-            LogTime.logAsync("MainActivity.initAsyncLibrary -> Start - (Async Native Example)")
+            FlowDiagram.logAsync("MainActivity.initAsyncLibrary -> Start - (Async Native Example)")
             delay(2000)
-            LogTime.logAsync("MainActivity.initAsyncLibrary -> End - (Async Native Example)")
+            FlowDiagram.logAsync("MainActivity.initAsyncLibrary -> End - (Async Native Example)")
         }
     }
 
     private fun initSyncLibrary() {
-        LogTime.logSync("MainActivity.initSyncLibrary -> Start - (Sync Native Example)")
+        FlowDiagram.logSync("MainActivity.initSyncLibrary -> Start - (Sync Native Example)")
         Thread.sleep(500)
-        LogTime.logSync("MainActivity.initSyncLibrary -> End - (Sync Native Example)")
+        FlowDiagram.logSync("MainActivity.initSyncLibrary -> End - (Sync Native Example)")
     }
 }

@@ -1,125 +1,48 @@
 package net.alexandroid.flowdiagram
 
+import android.content.Context
 import android.content.Intent
-import android.util.Log
+import okhttp3.Interceptor
 
+/** v1 entry points, kept as thin aliases of [FlowDiagram] until 2.1. Log output (Logcat) was removed. */
+@Deprecated("Use FlowDiagram", ReplaceWith("FlowDiagram"))
 object LogTime {
-    var appOnCreateTime: Long = 0
-    var isLogEnabled = false
-    private const val LOG_TAG = "FlowDiagramTime"
-    private const val INTENT_FLAG = "FlowDiagramFlag"
-    private const val LOG_MS_CHARS = 9
-    private var messageCounter = HashMap<String, Int>() // HashMap to store message and its counter
 
+    @Deprecated("Use FlowDiagram.init(context, alwaysOn)")
     fun onApplicationOnCreate(logsEnabled: Boolean = false) {
-        appOnCreateTime = System.currentTimeMillis()
-        isLogEnabled = logsEnabled
+        currentApplication()?.let { FlowDiagram.init(it, logsEnabled) }
     }
 
-    val loggingInterceptor = LoggingInterceptor()
-
-    fun onIntent(intent: Intent) {
-        if(!isLogEnabled) {
-            isLogEnabled = intent.getBooleanExtra(INTENT_FLAG, false)
-        }
+    @Deprecated("Use FlowDiagram.init(context, alwaysOn)")
+    fun onApplicationOnCreate(context: Context, logsEnabled: Boolean = false) {
+        FlowDiagram.init(context, logsEnabled)
     }
 
-    fun getTimeSinceAppLaunch(): String = (System.currentTimeMillis() - appOnCreateTime).toString()
+    @Deprecated("Use FlowDiagram.interceptor")
+    val loggingInterceptor: Interceptor
+        get() = FlowDiagram.interceptor
 
-    fun logNetwork(
-        message: String,
-        logType: LogType = LogType.AD,
-        responseCode: Int = 0,
-        elapsedTime: Long = 0
-    ) {
-        if (!isLogEnabled) {
-            return
-        }
-        when (logType) {
-            LogType.NE_REQUEST -> logNeRequest(message)
-            LogType.NE_RESPONSE -> logNeResponse(message, responseCode, elapsedTime)
-            else -> {}
-        }
-    }
+    @Deprecated("Use FlowDiagram.onIntent(intent)")
+    fun onIntent(intent: Intent) = FlowDiagram.onIntent(intent)
 
-    private fun logNeRequest(message: String) {
-        val messageWithSuffix = addSuffixToMessage("[NET][REQ] $message")
-        logI("${sinceCreated()} => $messageWithSuffix")
-    }
-
-    private fun logNeResponse(message: String, responseCode: Int, elapsedTime: Long) {
-        val messageWithSuffix = addSuffixToMessage("[NET][RSP] $message")
-        logI(
-            "${sinceCreated()} => " +
-                    "$messageWithSuffix, " +
-                    "Status: $responseCode, " +
-                    "Elapsed time: $elapsedTime"
-        )
-    }
-
-
+    @Deprecated("Use FlowDiagram.logSync")
     fun logSync(
         message: String,
         logType: LogType = LogType.AD,
         logLevel: LogLevel = LogLevel.DEBUG
-    ) {
-        if (!isLogEnabled) {
-            return
-        }
-        val type = addSpaces(logType.name, 2)
-        val messageWithSuffix = addSuffixToMessage(message)
-        logI("${sinceCreated()} => [$type][${logLevel.name}][SYNC] $messageWithSuffix")
-    }
+    ) = FlowDiagram.logSync(message, logType, logLevel)
 
+    @Deprecated("Use FlowDiagram.logAsync")
     fun logAsync(
         message: String,
         logType: LogType = LogType.AD,
         logLevel: LogLevel = LogLevel.DEBUG
-    ) {
-        if (!isLogEnabled) {
-            return
-        }
-        val type = addSpaces(logType.name, 2)
-        val messageWithSuffix = addSuffixToMessage(message)
-        logI("${sinceCreated()} => [$type][${logLevel.name}][ASYNC] $messageWithSuffix")
+    ) = FlowDiagram.logAsync(message, logType, logLevel)
+
+    // The v1 signature had no Context. Application.onCreate runs after ActivityThread set the app.
+    private fun currentApplication(): Context? = try {
+        Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as? Context
+    } catch (_: Exception) {
+        null
     }
-
-    // Helpers
-    private fun logI(text: String) = Log.i(LOG_TAG, text)
-
-    private fun sinceCreated() =
-        addSpaces(
-            formatChunksOfThree(
-                System.currentTimeMillis() - appOnCreateTime
-            )
-        )
-
-    private fun formatChunksOfThree(input: Long) = if (input < 1000) {
-        input.toString()
-    } else {
-        input.toString()
-            .reversed()
-            .chunked(3)
-            .joinToString(" ")
-            .reversed()
-    }
-
-    private fun addSpaces(time: String, spacesNum: Int = LOG_MS_CHARS): String {
-        val text = StringBuilder(time)
-        val spaces = spacesNum - text.length
-        if (spaces > 0) text.append(" ".repeat(spaces))
-        return text.toString()
-    }
-
-    private fun addSuffixToMessage(message: String): String {
-        val counter = messageCounter.getOrDefault(message, 0)
-        if (counter > 0) {
-            messageCounter[message] = counter + 1
-            return "$message($counter)"
-        } else {
-            messageCounter[message] = 1
-            return message
-        }
-    }
-
 }

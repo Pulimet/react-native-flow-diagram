@@ -18,7 +18,7 @@ class FlowDiagramModule(reactContext: ReactApplicationContext) : NativeFlowDiagr
             return
         }
         val logLevel = if (level == 0.0) LogLevel.DEBUG else LogLevel.INFO
-        LogTime.logSync(
+        FlowDiagram.logSync(
             msg,
             LogType.RN,
             logLevel
@@ -30,6 +30,6 @@ class FlowDiagramModule(reactContext: ReactApplicationContext) : NativeFlowDiagr
             return
         }
         val logLevel = if (level == 0.0) LogLevel.DEBUG else LogLevel.INFO
-        LogTime.logAsync(msg, LogType.RN, logLevel)
+        FlowDiagram.logAsync(msg, LogType.RN, logLevel)
     }
 }

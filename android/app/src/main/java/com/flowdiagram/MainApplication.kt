@@ -11,7 +11,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
-import net.alexandroid.flowdiagram.LogTime
+import net.alexandroid.flowdiagram.FlowDiagram
 import okhttp3.OkHttpClient
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.react.modules.network.ReactCookieJarContainer
@@ -20,24 +20,24 @@ import com.facebook.react.modules.network.ReactCookieJarContainer
 class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
-        LogTime.onApplicationOnCreate(true)
-        LogTime.logSync("MainApplication.onCreate -> Start - (Sync Native Example)")
+        FlowDiagram.init(this)
+        FlowDiagram.logSync("MainApplication.onCreate -> Start - (Sync Native Example)")
         super.onCreate()
         setupOkHttpClient()
         initRN()
-        LogTime.logSync("MainApplication.onCreate -> End - Sync NativeExample - (Sync Native Example)")
+        FlowDiagram.logSync("MainApplication.onCreate -> End - Sync NativeExample - (Sync Native Example)")
     }
 
     private fun setupOkHttpClient() {
         val okHttpClient = OkHttpClient.Builder()
             .cookieJar(ReactCookieJarContainer())
-            .addInterceptor(LogTime.loggingInterceptor)
+            .addInterceptor(FlowDiagram.interceptor)
             .build()
 
         OkHttpClientProvider.setOkHttpClientFactory {
             okHttpClient
         }
-        LogTime.logSync("MainApplication.setupOkHttpClient -> Done - (Sync Native Example)")
+        FlowDiagram.logSync("MainApplication.setupOkHttpClient -> Done - (Sync Native Example)")
     }
 
     private fun initRN() {
