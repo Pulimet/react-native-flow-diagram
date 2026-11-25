@@ -5,6 +5,9 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
+    "android:release": "react-native run-android --mode release",
+    "ios:simulator:release": "react-native run-ios --mode Release",
+    "ios:device:release": "react-native run-ios --mode Release --device",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
