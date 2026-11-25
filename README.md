@@ -56,7 +56,39 @@ Numbers for performance decisions should come from **physical devices**. Emulato
   builds do not allow this.
 - **iOS simulator**: a Release build installed on the simulator.
 
+## Try it with the sample app
+
+This repository is also the sample app (`com.flowdiagram` on Android, `org.reactjs.native.example.FlowDiagram` on iOS).
+It already contains every integration step below, and the CLI defaults match it, so each command in this README runs
+unchanged against it. The files to compare with your own app: `android/app/src/main/java/com/flowdiagram/MainApplication.kt`,
+`MainActivity.kt`, `ios/FlowDiagram/AppDelegate.swift` and `App.tsx`.
+
+```shell
+npm install
+cd ios && pod install && cd ..      # iOS only
+npm run flow-setup                   # one time, creates the Python environment
+```
+
+Build and install a **release** build (a debug build is rejected by the CLI):
+
+| Target | Build and install |
+|---|---|
+| Android emulator or device | `cd android && ./gradlew assembleRelease && adb install -r app/build/outputs/apk/release/app-release.apk` (add `-s <serial>` to `adb` if several devices are connected) |
+| iOS simulator | `xcodebuild -workspace ios/FlowDiagram.xcworkspace -scheme FlowDiagram -configuration Release -destination "id=<simulator-udid>" -derivedDataPath /tmp/fd-sim build`, then `xcrun simctl install <simulator-udid> /tmp/fd-sim/Build/Products/Release-iphonesimulator/FlowDiagram.app` |
+| iOS device | same `xcodebuild` with `-destination "id=<device-udid>" -derivedDataPath /tmp/fd-dev DEVELOPMENT_TEAM=<team-id> CODE_SIGN_STYLE=Automatic -allowProvisioningUpdates`, then `xcrun devicectl device install app --device <device-udid> /tmp/fd-dev/Build/Products/Release-iphoneos/FlowDiagram.app` |
+
+Find the ids with `adb devices`, `xcrun simctl list devices booted` and `xcrun devicectl list devices`. Then measure:
+```shell
+npm run flow:android -- --launch_times 5
+npm run flow:ios_simulator -- --launch_times 5
+npm run flow:ios_device -- --udid <device-udid> --launch_times 5
+```
+Results are written to `output/<yy-mm-dd>/` (see [Output](#output)). Emulator and simulator runs have no internet access
+in some setups, so the sample's network calls may show "request without response" warnings there.
+
 ## Installation
+
+The steps below are for your own app. The sample app already has them applied.
 
 ```shell
 npm i react-native-flow-diagram
@@ -158,10 +190,11 @@ npm run flow-setup
 The `npm run flow:*` scripts use `modules/react-native-flow-diagram/py/.venv`. Flags go after `--`.
 
 ### Android (emulator or device)
-Install the release build and keep a single device connected (or pass `--serial`).
+Install the release build and keep a single device connected (or pass `--serial`). The defaults target the sample app.
 ```shell
 npm run flow:android -- --launch_times 10
-npm run flow:android -- --serial R5CT123 --package com.myapp --activity com.myapp.MainActivity --launch_times 10
+npm run flow:android -- --serial <serial> --launch_times 10
+npm run flow:android -- --serial <serial> --package com.myapp --activity com.myapp.MainActivity --launch_times 10   # your own app
 ```
 The app is launched with `am start -W -S` and the flag. The run file is read from
 `Android/data/<package>/files/flowdiagram/runs/`, with a fallback to `Download/flowdiagram/<package>/` (force it with
@@ -169,20 +202,22 @@ The app is launched with `am start -W -S` and the flag. The run file is read fro
 
 ### iOS simulator
 ```shell
-npm run flow:ios_simulator -- --bundle_id com.myapp --launch_times 10
+npm run flow:ios_simulator -- --launch_times 10
+npm run flow:ios_simulator -- --bundle_id com.myapp --launch_times 10   # your own app
 ```
 Use `--udid <udid>` if several simulators are booted.
 
 ### iOS device
 ```shell
-npm run flow:ios_device -- --bundle_id com.myapp --udid <udid> --launch_times 10
+npm run flow:ios_device -- --udid <udid> --launch_times 10
+npm run flow:ios_device -- --bundle_id com.myapp --udid <udid> --launch_times 10   # your own app
 ```
 Install the Release build first (Xcode, or `xcrun devicectl device install app`). The CLI never installs or uninstalls.
 **Do not uninstall the app between measurements**: the run files live in the app container.
 
 ### Without a device
 ```shell
-npm run flow -- --from-dir output/<date>/raw
+npm run flow -- --from-dir output/<yy-mm-dd>/raw
 ```
 
 ### Flags
