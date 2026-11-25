@@ -1,44 +1,22 @@
 import UIKit
-import React
-import React_RCTAppDelegate
-import ReactAppDependencyProvider
 import FlowDiagramModule
 import Foundation
 
 @main
-class AppDelegate: RCTAppDelegate {
-  override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+class AppDelegate: UIResponder, UIApplicationDelegate {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FlowDiagram.onAppLaunched()
     FlowDiagram.logSync(message: "AppDelegate.didFinishLaunchingWithOptions -> Start (Sync Native Example)")
   
-    self.moduleName = "FlowDiagram"
-    self.dependencyProvider = RCTAppDependencyProvider()
-
-    // You can add your custom initial props in the dictionary below.
-    // They will be passed down to the ViewController used by React Native.
-    self.initialProps = [:]
-    
     makeNetworkRequest()
     initAsyncLibrary()
     initSyncLibrary()
     
     FlowDiagram.logSync(message: "AppDelegate.didFinishLaunchingWithOptions -> End (Sync Native Example)")
 
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    return true
   }
 
-  override func sourceURL(for bridge: RCTBridge) -> URL? {
-    self.bundleURL()
-  }
-
-  override func bundleURL() -> URL? {
-#if DEBUG
-    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-#else
-    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-#endif
-  }
-  
   private func makeNetworkRequest() {
       guard let url = URL(string: "https://api.agify.io/?name=Alexey") else {
           print("AppDelegate -> makeNetworkRequest-> Invalid URL")

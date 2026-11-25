@@ -10,13 +10,14 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Colors = {
+  white: '#ffffff',
+  black: '#000000',
+  light: '#dae1e7',
+  dark: '#404040',
+  lighter: '#f3f3f3',
+  darker: '#202020',
+};
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -64,6 +65,7 @@ function App(): React.JSX.Element {
     initAsyncLibrary()
     initSyncLibrary()
     logSync('App.tsx -> useEffect - End (Sync RN Example)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const makeNetworkRequest = () => {
@@ -84,7 +86,7 @@ function App(): React.JSX.Element {
       });
   }
 
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
   const initAsyncLibrary = async (): Promise<void> => {
     logAsync("App.tsx -> initAsyncLibrary -> Start - (Async RN Example)");
@@ -113,12 +115,8 @@ function App(): React.JSX.Element {
     <View style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
       />
       <ScrollView style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header />
-        </View>
         <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
@@ -130,16 +128,6 @@ function App(): React.JSX.Element {
             Edit <Text style={styles.highlight}>App.tsx</Text> to change this
             screen and then come back to see your edits.
           </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
         </View>
       </ScrollView>
     </View>
