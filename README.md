@@ -292,8 +292,8 @@ Under `<output-dir>/<yy-mm-dd>/`:
 - `measure_<date>_<time>.html`: interactive single-file report. It has a zoomable, filterable timeline with a minimap and
   milestones; an events table with column filters (`>100`, `10-50`), sorting, resizable and hideable columns, and CSV or
   JSON export; a network tab; per-event run spread; click-to-jump between diagram and table; shareable URL state;
-  dark and light themes; and keyboard shortcuts (press `?`). D3 and Tabulator load from the jsDelivr CDN, so viewing it
-  needs internet access.
+  dark and light themes; and keyboard shortcuts (press `?`). Column widths, hidden columns, sorting and the theme are
+  remembered in the browser. D3 and Tabulator load from the jsDelivr CDN, so viewing it needs internet access.
 - `raw/<run_id>.jsonl`: the raw run files, usable with `--from-dir`.
 
 A failed iteration is skipped. The CLI exits with code 1 only if no run is usable.
