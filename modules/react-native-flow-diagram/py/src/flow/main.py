@@ -6,6 +6,7 @@ from platforms import create_platform
 from platforms.base import PlatformError
 from report.calc_average import calculate_averages
 from report.csv_utils import save_csv_with_data
+from report.html_report import save_html_report
 from report.visualize import save_png_with_data
 from run_loop import FatalRunError, load_from_dir, report_meta, start_measurements
 
@@ -36,8 +37,10 @@ def main(argv=None):
     meta = report_meta(result, platform)
     averages = calculate_averages(result.entries)
     save_csv_with_data(averages, params, meta)
+    save_html_report(averages, params, meta, runs=result.runs, failures=result.failures)
     save_png_with_data(averages, params, meta)
-    print(f"\nDone. CSV: {params.csv_path}\n      PNG: {params.png_path}")
+    print(f"\nDone. CSV:  {params.csv_path}\n      PNG:  {params.png_path}\n      SVG:  {params.svg_path}"
+          f"\n      HTML: {params.html_path}")
     return 0
 
 

@@ -97,12 +97,13 @@ def save_png(input_averages, params, meta=None):
 
         # print(f"{type_param} -> {color}")
 
-        # If type is NE then cut message to 50 characters
+        # Shorten long URLs in the label only; the shared data keeps the full message for the other reports.
+        label = item[MSG_PARAM]
         if type_param == TYPE_NET:
-            item[MSG_PARAM] = item[MSG_PARAM][:VISUAL_URL] + '...'
+            label = label[:VISUAL_URL] + '...'
 
         # Text label for the message
-        plt.text(x + width + 4, current_y, item[MSG_PARAM], ha='left', va='center', wrap=True)
+        plt.text(x + width + 4, current_y, label, ha='left', va='center', wrap=True)
 
         # Box plot with adjusted y-position
         plt.barh(current_y, width, box_height, left=x, color=color, alpha=0.5)
@@ -127,8 +128,11 @@ def save_png(input_averages, params, meta=None):
                    f"{meta.get('runs', '')} runs", f"t0: {meta.get('t0', '')}", meta.get('note', '')]
         title += "\n" + ", ".join(d for d in details if d)
     plt.title(title)
-    # Save the plot as a PNG image
-    plt.savefig(params.png_path)  # Replace with desired filename
+    plt.savefig(params.png_path)
+    svg_path = getattr(params, "svg_path", None)
+    if svg_path:
+        plt.savefig(svg_path)
+    plt.close()
 
     if params.open_png:
         # Open png file

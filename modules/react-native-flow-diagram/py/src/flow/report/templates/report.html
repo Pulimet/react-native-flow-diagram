@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__FLOW_TITLE__</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables@6.7.1/dist/css/tabulator.min.css"
+      integrity="sha384-xnEc77Tm0GtDMa5SK6wMci55eU0E+KodAqTli8SS1h1yHo/bRbtEZ+gTgwCEs3d6" crossorigin="anonymous">
+<style>/*__FLOW_CSS__*/</style>
+</head>
+<body>
+<div id="cdn-error" class="banner" hidden>
+  The report libraries (D3, Tabulator) could not be loaded from cdn.jsdelivr.net. Connect to the internet (or the proxy) and reload.
+</div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div>
+      <h1>Flow Diagram</h1>
+      <div id="subtitle" class="muted"></div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab" data-view="split" title="Diagram and table (1)">Split</button>
+    <button class="tab" data-view="diagram" title="Diagram only (2)">Diagram</button>
+    <button class="tab" data-view="table" title="Table only (3)">Table</button>
+    <button class="tab" data-view="network" title="Network (4)">Network</button>
+    <span class="tab-ink"></span>
+  </nav>
+  <div class="top-actions">
+    <div class="search">
+      <svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 0 1 6.32 12.9l5.4 5.39-1.42 1.42-5.39-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>
+      <input id="search" type="search" placeholder="Search events  ( / )" autocomplete="off">
+    </div>
+    <button id="btn-share" class="icon-btn" title="Copy link with the current view">🔗</button>
+    <button id="btn-theme" class="icon-btn" title="Toggle theme (t)">🌓</button>
+    <button id="btn-help" class="icon-btn" title="Keyboard shortcuts (?)">?</button>
+  </div>
+</header>
+
+<section id="cards" class="cards"></section>
+
+<section class="filters">
+  <div id="kind-chips" class="chips"></div>
+  <label class="ctl">Min duration
+    <input id="min-dur" type="range" min="0" max="1000" step="1" value="0">
+    <output id="min-dur-out">0 ms</output>
+  </label>
+  <label class="ctl">Highlight slowest
+    <select id="slowest">
+      <option value="0">off</option><option value="5">5</option><option value="10">10</option>
+      <option value="20">20</option>
+    </select>
+  </label>
+  <label class="switch"><input id="hide-markers" type="checkbox"><span></span>Hide markers</label>
+  <label class="switch"><input id="critical" type="checkbox"><span></span>SYNC path</label>
+  <label class="switch"><input id="whiskers" type="checkbox" checked><span></span>Run spread</label>
+  <label class="switch"><input id="link-window" type="checkbox"><span></span>Table follows zoom</label>
+  <button id="btn-reset-filters" class="ghost">Reset filters</button>
+  <span id="filter-count" class="muted"></span>
+</section>
+
+<main id="main" class="view-split">
+  <section id="diagram-panel" class="panel">
+    <div class="panel-head">
+      <h2>Timeline</h2>
+      <div class="muted hint">Drag to pan · Ctrl/⌘ + wheel or pinch to zoom · Click a bar for details</div>
+      <div class="btn-group">
+        <button id="zoom-out" title="Zoom out (-)">−</button>
+        <button id="zoom-in" title="Zoom in (+)">+</button>
+        <button id="zoom-fit" title="Fit all (0)">Fit</button>
+        <button id="zoom-sel" title="Zoom to selected (z)">Selected</button>
+      </div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div id="axis-wrap"><svg id="axis"></svg></div>
+    <div id="chart-wrap"><svg id="chart"></svg></div>
+    <div id="minimap-wrap"><svg id="minimap"></svg></div>
+  </section>
+
+  <div id="gutter" title="Drag to resize"></div>
+
+  <section id="table-panel" class="panel">
+    <div class="panel-head">
+      <h2>Events</h2>
+      <span id="row-count" class="muted"></span>
+      <div class="btn-group">
+        <div class="dropdown">
+          <button id="btn-columns">Columns ▾</button>
+          <div id="columns-menu" class="menu" hidden></div>
+        </div>
+        <button id="btn-clear-head">Clear column filters</button>
+        <button id="btn-export">Export CSV</button>
+        <button id="btn-export-json">Export JSON</button>
+      </div>
+    </div>
+    <div id="table"></div>
+  </section>
+
+  <section id="network-panel" class="panel">
+    <div class="panel-head">
+      <h2>Network</h2>
+      <span id="net-summary" class="muted"></span>
+      <div class="btn-group"><button id="btn-net-collapse">Collapse all</button><button id="btn-net-export">Export CSV</button></div>
+    </div>
+    <div id="net-table"></div>
+  </section>
+</main>
+
+<aside id="details" class="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span id="d-kind" class="pill"></span>
+    <div class="btn-group">
+      <button id="d-prev" title="Previous (k / ↑)">↑</button>
+      <button id="d-next" title="Next (j / ↓)">↓</button>
+      <button id="d-close" title="Close (Esc)">✕</button>
+    </div>
+  </div>
+  <h3 id="d-msg"></h3>
+  <div id="d-stats" class="stats"></div>
+  <h4>Time since t0 per run</h4>
+  <svg id="d-runs"></svg>
+  <div id="d-runs-list" class="runs-list"></div>
+  <div class="drawer-actions">
+    <button id="d-locate">Locate in diagram</button>
+    <button id="d-table">Show in table</button>
+    <button id="d-copy">Copy</button>
+  </div>
+</aside>
+
+<div id="tooltip" role="tooltip"></div>
+<div id="toasts"></div>
+
+<dialog id="help">
+  <h3>Keyboard shortcuts</h3>
+  <table class="keys">
+    <tr><td><kbd>/</kbd></td><td>Search</td></tr>
+    <tr><td><kbd>j</kbd> <kbd>↓</kbd> / <kbd>k</kbd> <kbd>↑</kbd></td><td>Next / previous event</td></tr>
+    <tr><td><kbd>Enter</kbd></td><td>Open details of the selected event</td></tr>
+    <tr><td><kbd>+</kbd> / <kbd>-</kbd> / <kbd>0</kbd></td><td>Zoom in / out / fit</td></tr>
+    <tr><td><kbd>z</kbd></td><td>Zoom to selected event</td></tr>
+    <tr><td><kbd>1</kbd>–<kbd>4</kbd></td><td>Split / Diagram / Table / Network</td></tr>
+    <tr><td><kbd>t</kbd></td><td>Toggle theme</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Close panel, clear selection</td></tr>
+  </table>
+  <p class="muted">The view (filters, zoom, selection) is stored in the URL, so a copied link reopens the same view.</p>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
+
+<script id="flow-data" type="application/json">/*__FLOW_DATA__*/</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.2/dist/d3.min.js"
+        integrity="sha384-LxfWGZyh6PaLjBRPf7NWiEYs9Mn0UQ6ZmqbLLZhxlOBBNWF2a2K0Pfc5efkrNnhQ" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6.7.1/dist/js/tabulator.min.js"
+        integrity="sha384-1M1aGyKpzLZTYIWClgDVwtSkPjR2lvQIkbhZvQ3A3VPKhU2H6EjeXeCBEmyXluer" crossorigin="anonymous"></script>
+<script>/*__FLOW_JS__*/</script>
+</body>
+</html>

@@ -65,6 +65,8 @@ def build_parser():
                      help='Should open CSV with results (Default: False)')
     out.add_argument('--open_png', '--open-png', dest='open_png', type=bool, default=False,
                      help='Should open PNG with results (Default: False)')
+    out.add_argument('--open_html', '--open-html', dest='open_html', type=bool, default=False,
+                     help='Should open the interactive HTML report in the browser (Default: False)')
     p.add_argument('--extra', default=None, help=argparse.SUPPRESS)  # v1 flag, now a no-op
     return p
 
@@ -95,8 +97,9 @@ def parse_args(argv=None):
         strip_query=args.strip_query,
         poll_interval=args.poll_interval, stable_polls=args.stable_polls, timeout=args.timeout,
         from_dir=args.from_dir, csv_path=f"{file_path}.csv", csv_net_path=f"{file_path}_net.csv",
-        png_path=f"{file_path}.png", raw_dir=f"{output_path}/raw", output_dir=args.output_dir,
+        png_path=f"{file_path}.png", svg_path=f"{file_path}.svg", html_path=f"{file_path}.html", raw_dir=f"{output_path}/raw", output_dir=args.output_dir,
         output_path=output_path, open_csv=args.open_csv, open_png=args.open_png,
+        open_html=args.open_html,
     )
 
 
@@ -111,6 +114,8 @@ class CLIParams:
     csv_path: str
     csv_net_path: str
     png_path: str
+    svg_path: str
+    html_path: str
     raw_dir: str
     output_dir: str
     output_path: str
@@ -127,3 +132,4 @@ class CLIParams:
     from_dir: Optional[str] = None
     open_csv: bool = False
     open_png: bool = False
+    open_html: bool = False

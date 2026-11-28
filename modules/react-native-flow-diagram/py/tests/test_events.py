@@ -141,6 +141,83 @@ def test_feeds_v1_png(tmp_path):
     matplotlib.use("Agg")
     from report.visualize import save_png_with_data
     avgs = calculate_averages(normalize(read_run(FIX / "happy.jsonl")).entries)
-    params = SimpleNamespace(png_path=str(tmp_path / "a.png"), open_png=False)
+    params = SimpleNamespace(png_path=str(tmp_path / "a.png"), svg_path=str(tmp_path / "a.svg"), open_png=False)
     save_png_with_data(avgs, params)
     assert Path(params.png_path).stat().st_size > 0
+    assert Path(params.svg_path).read_text().lstrip().startswith("<?xml")
+
+
+def test_html_report_embeds_events_safely(tmp_path):
+    import json
+    import re
+    import report.html_report
+    from report.html_report import save_html_report
+    avgs = calculate_averages(normalize(read_run(FIX / "happy.jsonl")).entries)
+    avgs[-1]["msg"] = "evil </script><script>alert(1)</script> /*__FLOW_JS__*/"
+    params = SimpleNamespace(html_path=str(tmp_path / "a.html"), platform="android", package="com.flowdiagram",
+                             launch_times=1, open_html=False)
+    save_html_report(avgs, params, {"runs": 1, "device": "Pixel 8"})
+    page = Path(params.html_path).read_text()
+    assert page.count("__FLOW_") == 1  # only the copy inside the embedded message
+    template = (Path(report.html_report.__file__).parent / "templates" / "report.html").read_text()
+    assert page.count("</script>") == template.count("</script>")
+    data = json.loads(re.search(r'<script id="flow-data" type="application/json">(.*?)</script>', page, re.S).group(1))
+    assert [e["msg"] for e in data["events"]] == [a["msg"] for a in avgs]
+    assert data["meta"]["device"] == "Pixel 8" and data["meta"]["app_id"] == "com.flowdiagram"
+    kinds = {e["kind"] for e in data["events"]}
+    assert {"native", "net_req", "net_rsp"} <= kinds
+
+
+def test_png_keeps_full_net_messages(tmp_path):
+    pytest.importorskip("matplotlib")
+    import matplotlib
+    matplotlib.use("Agg")
+    from report.visualize import save_png_with_data
+    avgs = calculate_averages(normalize(read_run(FIX / "happy.jsonl")).entries)
+    before = [a["msg"] for a in avgs]
+    save_png_with_data(avgs, SimpleNamespace(png_path=str(tmp_path / "a.png"), open_png=False))
+    assert [a["msg"] for a in avgs] == before
+
+
+def test_event_kind_matches_png_colors():
+    from report.html_report import event_kind
+    assert event_kind({"type": "IOS", "sync_async": "SYNC"}) == "native"
+    assert event_kind({"type": "RN", "sync_async": "SYNC"}) == "rn"
+    assert event_kind({"type": "AD", "sync_async": "ASYNC"}) == "async"
+    assert event_kind({"type": "NET", "req_rsp": "REQ"}) == "net_req"
+    assert event_kind({"type": "NET", "req_rsp": "RSP"}) == "net_rsp"
+
+
+def test_html_report_markers_title_and_open(tmp_path, monkeypatch):
+    import report.html_report as hr
+    opened = []
+    monkeypatch.setattr(hr.webbrowser, "open", opened.append)
+    avgs = [{"time": 50, "duration": 50, "type": "AD", "sync_async": "SYNC", "msg": "a", "count": 2, "minTime": 40,
+             "maxTime": 60, "allTime": "40 60"},
+            {"time": 80, "duration": 30, "type": "RN", "sync_async": "ASYNC", "msg": "b"}]
+    params = SimpleNamespace(html_path=str(tmp_path / "a.html"), platform="ios_sim", bundle_id="com.b", open_html=True)
+    hr.save_html_report(avgs, params, {"device": "<iPhone>"}, runs=[{"app_id": "", "platform": "ios"}],
+                        failures=["boom"])
+    payload = hr.build_payload(avgs, params, {"device": "<iPhone>"}, runs=[{"platform": "ios"}], failures=["boom"])
+    sync, marker = payload["events"]
+    assert (sync["start"], sync["duration"], sync["all"], sync["min"]) == (0, 50, [40, 60], 40)
+    assert (marker["start"], marker["duration"], marker["count"], marker["min"]) == (80, 0, 0, 80)
+    assert payload["meta"]["app_id"] == "com.b" and payload["failures"] == ["boom"]
+    page = Path(params.html_path).read_text()
+    assert "<title>Flow Diagram · com.b · &lt;iPhone&gt;</title>" in page
+    assert opened == [Path(params.html_path).resolve().as_uri()]
+
+
+def test_main_from_dir_writes_all_reports(tmp_path, monkeypatch):
+    pytest.importorskip("matplotlib")
+    import matplotlib
+    matplotlib.use("Agg")
+    import shutil
+    from main import main
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    shutil.copy(FIX / "happy.jsonl", raw / "20261124-083600-it01.jsonl")
+    monkeypatch.chdir(tmp_path)
+    assert main(["--from-dir", str(raw), "--output-dir", str(tmp_path / "out")]) == 0
+    files = sorted(p.suffix for p in (tmp_path / "out").rglob("measure_*"))
+    assert files == [".csv", ".csv", ".html", ".png", ".svg"]

@@ -5,6 +5,9 @@
 ### Added
 - CLI `--strip-query PATTERN` drops the query string of matching network URLs, so requests that differ only by query
   params are averaged as one request.
+- SVG flow diagram next to the PNG.
+- Interactive HTML report (`measure_<date>_<time>.html`): zoomable and filterable timeline, filterable table with
+  resizable and hideable columns, network tab, diagram and table cross-navigation. `--open-html` opens it when done.
 
 ## 2.0.0
 
