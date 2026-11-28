@@ -13,7 +13,7 @@ def make_params(**over):
     base = dict(platform="android", package="com.flowdiagram", bundle_id="org.example.App",
                 activity="com.flowdiagram.MainActivity", serial=None, udid=None, compile_mode="speed-profile",
                 sink="auto", allow_debuggable=False, wait_time=0, poll_interval=0, stable_polls=2, timeout=5,
-                launch_times=3, t0="process_start")
+                launch_times=3, t0="process_start", strip_query=())
     base.update(over)
     return SimpleNamespace(**base)
 

@@ -23,3 +23,9 @@ def test_invalid_values_exit():
         parse_args(["--compile-mode", "fast"])
     with pytest.raises(SystemExit):
         parse_args(["--launch_times", "0"])
+
+
+def test_strip_query_repeat_and_comma_separated():
+    assert parse_args([]).strip_query == ()
+    p = parse_args(["--strip-query", "dynatrace.com, abc.com/_bm/get_params", "--strip_query", "generate_204"])
+    assert p.strip_query == ("dynatrace.com", "abc.com/_bm/get_params", "generate_204")

@@ -57,6 +57,20 @@ def test_req_rsp_pairing_and_unmatched_request():
     assert any("req_id 7" in w for w in out.warnings)
 
 
+
+def test_strip_query_merges_matching_urls_only():
+    net = lambda seq, t, ph, rid, url, extra="": (
+        f'{{"type":"net","seq":{seq},"t_ms":{t},"phase":"{ph}","req_id":{rid},"url":"{url}"{extra}}}')
+    g1, g2 = "https://clients3.google.com/generate_204?_=1", "https://clients3.google.com/generate_204?_=2"
+    keep = "https://www.abc.com/api?id=1"
+    run = run_of(net(1, 10, "REQ", 1, g1), net(2, 20, "RSP", 1, g1, ',"status":204'),
+                 net(3, 30, "REQ", 2, g2), net(4, 40, "RSP", 2, g2, ',"status":204'),
+                 net(5, 50, "REQ", 3, keep))
+    msgs = [e["msg"] for e in normalize(run, strip_query=("google.com/generate_204", "id=1")).entries]
+    base = "https://clients3.google.com/generate_204"
+    assert msgs == [base, f"[204] {base}", f"{base}(1)", f"[204] {base}(1)", keep]
+    assert [e["msg"] for e in normalize(run).entries][0] == g1
+
 def test_truncated_last_line():
     run = read_run(FIX / "truncated.jsonl")
     assert run.truncated and len(run.events) == 1

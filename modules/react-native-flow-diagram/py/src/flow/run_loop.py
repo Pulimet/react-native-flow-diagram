@@ -40,7 +40,7 @@ def ingest(path, run_id, params, result: Measurement):
     if (header.debuggable or header.build == "debug") and not params.allow_debuggable:
         raise FatalRunError(f"{run_id}: the app reports a debuggable/debug build. Measure a release build, "
                             "or pass --allow-debuggable.")
-    out = normalize(run, t0=params.t0)
+    out = normalize(run, t0=params.t0, strip_query=params.strip_query)
     for warning in out.warnings:
         if not warning.startswith(MISSING_RUN_END):
             print(f"  warning: {warning}")

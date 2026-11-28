@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- CLI `--strip-query PATTERN` drops the query string of matching network URLs, so requests that differ only by query
+  params are averaged as one request.
+
 ## 2.0.0
 
 Breaking release. See the [migration guide](docs/v2/MIGRATION.md).

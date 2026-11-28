@@ -40,6 +40,10 @@ def build_parser():
                            "'downloads' asks the app to write to Download. (Default: auto)")
     meas.add_argument('--allow-debuggable', dest='allow_debuggable', action='store_true',
                       help='Measure a debuggable/debug build anyway (numbers are not representative).')
+    meas.add_argument('--strip-query', '--strip_query', dest='strip_query', action='append', default=[],
+                      metavar='PATTERN',
+                      help='Drop the query string of network URLs whose address (before "?") contains PATTERN, '
+                           'so they are averaged as one request. Repeat the flag or separate patterns with commas.')
 
     wait = p.add_argument_group('completion detection')
     wait.add_argument('--wait_time', '--wait-time', dest='wait_time', type=float, default=10,
@@ -73,6 +77,7 @@ def parse_args(argv=None):
         print("WARNING: --extra is deprecated and ignored. The flag is always passed in v2.")
     if args.launch_times < 1:
         parser.error("--launch_times must be at least 1")
+    args.strip_query = tuple(p.strip() for value in args.strip_query for p in value.split(',') if p.strip())
 
     print("Measurement script launched with arguments: " + ", ".join(
         f"\033[1m{name}\033[0m: {value}" for name, value in vars(args).items()
@@ -87,6 +92,7 @@ def parse_args(argv=None):
         platform=args.platform, package=args.package, bundle_id=args.bundle_id, activity=args.activity,
         wait_time=args.wait_time, launch_times=args.launch_times, serial=args.serial, udid=args.udid,
         compile_mode=args.compile_mode, t0=args.t0, sink=args.sink, allow_debuggable=args.allow_debuggable,
+        strip_query=args.strip_query,
         poll_interval=args.poll_interval, stable_polls=args.stable_polls, timeout=args.timeout,
         from_dir=args.from_dir, csv_path=f"{file_path}.csv", csv_net_path=f"{file_path}_net.csv",
         png_path=f"{file_path}.png", raw_dir=f"{output_path}/raw", output_dir=args.output_dir,
@@ -114,6 +120,7 @@ class CLIParams:
     t0: str = "process_start"
     sink: str = "auto"
     allow_debuggable: bool = False
+    strip_query: tuple = ()
     poll_interval: float = 1.0
     stable_polls: int = 2
     timeout: float = 60.0

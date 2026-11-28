@@ -56,6 +56,47 @@ Numbers for performance decisions should come from **physical devices**. Emulato
   builds do not allow this.
 - **iOS simulator**: a Release build installed on the simulator.
 
+## Fast measurements start
+
+For the sample app in this repository, from the repository root:
+
+```bash
+git pull
+npm install
+cd ios; pod update; cd ..
+npm run flow-setup
+```
+
+**iOS**
+
+```bash
+npm run ios:device:release
+# Login
+npm run flow:ios_device -- --launch_times 30
+```
+
+**Android**
+
+```bash
+cd android; ./gradlew generateCodegenArtifactsFromSchema; cd ..
+npm run android:release
+# Login
+npm run flow:android -- --launch_times 30
+```
+
+If Android has Java issues:
+
+```bash
+cd android && ./gradlew --stop && cd ..
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+```
+
+To merge requests that differ only by query params (beacons, cache busters), add `--strip-query`, for example:
+
+```bash
+npm run flow:ios_device -- --launch_times 30 --strip-query dynatrace.com --strip-query abc.com/_bm/get_params --strip-query clients3.google.com/generate_204
+```
+
 ## Try it with the sample app
 
 This repository is also the sample app (`com.flowdiagram` on Android, `org.reactjs.native.example.FlowDiagram` on iOS).
@@ -233,6 +274,7 @@ npm run flow -- --from-dir output/<yy-mm-dd>/raw
 | `--t0 {process_start,app_init}` | `process_start` | Time origin. `app_init` gives numbers comparable with v1. |
 | `--sink {auto,downloads}` | `auto` | Android run file location. |
 | `--allow-debuggable` | off | Measure a debuggable or Debug build anyway. |
+| `--strip-query PATTERN` | none | Drop the query string (and fragment) of network URLs whose address before `?` contains `PATTERN`, so they are averaged as one request. Repeat the flag or separate patterns with commas. |
 | `--wait_time` | `10` | Seconds to wait before the first fetch. |
 | `--poll-interval`, `--stable-polls` | `1`, `2` | After the wait, fetch until the file ends with `run_end` or is unchanged for N polls. |
 | `--timeout` | `60` | Hard limit per run in seconds. A partial file is used with a warning. |
