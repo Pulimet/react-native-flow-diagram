@@ -66,7 +66,8 @@ def build_payload(input_averages, params, meta=None, runs=(), failures=()) -> di
 
     run_headers = [asdict(r) if is_dataclass(r) else dict(r) for r in runs]
     first = run_headers[0] if run_headers else {}
-    platform = getattr(params, "platform", "") or first.get("platform", "")
+    # Saved runs know their platform; the CLI value is only a default when reading --from-dir.
+    platform = first.get("platform") or getattr(params, "platform", "")
     app_id = first.get("app_id") or (getattr(params, "package", "") if platform == "android"
                                      else getattr(params, "bundle_id", ""))
     return {

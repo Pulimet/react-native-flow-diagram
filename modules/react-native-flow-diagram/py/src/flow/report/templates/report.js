@@ -43,9 +43,10 @@
   const appInit = EVENTS.find(e => e.msg === 'Process start -> App init');
   if (appInit) milestones.push({ t: appInit.time, label: 'App init' });
   const firstRn = EVENTS.find(e => e.kind === 'rn');
-  if (firstRn) milestones.push({ t: firstRn.start, label: 'First RN' });
+  if (firstRn) milestones.push({ t: firstRn.time, label: 'First RN' });
   if (META.system_total_time_ms) milestones.push({ t: META.system_total_time_ms, label: 'AM TotalTime' });
   if (lastSync) milestones.push({ t: end(lastSync), label: 'Last SYNC' });
+  milestones.sort((a, b) => a.t - b.t);
 
   // ---------- Network pairing ----------
   const NET = (() => {
@@ -273,7 +274,7 @@
     let zx = x0.copy(), width = 0, height = 0, hot = new Set(), first = true, syncing = false;
 
     const zoom = d3.zoom()
-      .scaleExtent([1, Math.max(50, MAX_END / 5)])
+      .scaleExtent([1, Math.max(50, MAX_END / 20)])
       .filter(ev => (ev.type === 'wheel' ? ev.ctrlKey || ev.metaKey || ev.shiftKey : !ev.button) && ev.type !== 'dblclick')
       .on('zoom', ev => {
         zx = ev.transform.rescaleX(x0);
@@ -317,8 +318,17 @@
       });
       ms.select('line').attr('x1', d => zx(d.t)).attr('x2', d => zx(d.t)).attr('y1', 0).attr('y2', height);
       const ams = gAxisMiles.selectAll('text').data(milestones).join('text')
-        .attr('x', d => zx(d.t) + 3).attr('y', 11).text(d => `${d.label} ${fmt(d.t)}`);
+        .attr('x', d => zx(d.t) + 3).attr('y', 11).attr('display', null).text(d => `${d.label} ${fmt(d.t)}`);
       ams.attr('display', d => (zx(d.t) < 0 || zx(d.t) > width ? 'none' : null));
+      // Close milestones share one label instead of drawing over each other.
+      let prev = null;
+      ams.each(function () {
+        if (this.getAttribute('display') === 'none') return;
+        const x = +this.getAttribute('x');
+        if (prev && x < +prev.getAttribute('x') + prev.getComputedTextLength() + 8) {
+          prev.textContent += ` · ${this.textContent}`; this.setAttribute('display', 'none');
+        } else prev = this;
+      });
       gAxisMiles.selectAll('line').data(milestones).join('line').attr('x1', d => zx(d.t)).attr('x2', d => zx(d.t)).attr('y1', 14).attr('y2', 42);
     }
 
@@ -473,7 +483,7 @@
       { title: 'Mode', field: 'mode', width: 80, headerFilter: 'list', headerFilterParams: { valuesLookup: true, clearable: true } },
       { title: 'Req/Rsp', field: 'reqRsp', width: 80, headerFilter: 'list', headerFilterParams: { valuesLookup: true, clearable: true }, visible: false },
       { title: 'Level', field: 'level', width: 76, headerFilter: 'list', headerFilterParams: { valuesLookup: true, clearable: true }, visible: false },
-      { title: 'Message', field: 'msg', minWidth: 260, widthGrow: 3, headerFilter: 'input', headerFilterPlaceholder: 'filter…', tooltip: true,
+      { title: 'Message', field: 'msg', minWidth: 260, width: 420, widthGrow: 3, headerFilter: 'input', headerFilterPlaceholder: 'filter…', tooltip: true,
         formatter: c => `<span title="${esc(c.getValue())}">${esc(c.getValue())}</span>` },
       numCol('Runs', 'count', { width: 72 }),
       numCol('Min', 'min'), numCol('Max', 'max'), numCol('Spread', 'spread'),
@@ -549,9 +559,9 @@
         formatter: c => { const v = String(c.getValue()); return `<span class="${/^[23]/.test(v) ? 'status-ok' : 'status-bad'}">${esc(v)}</span>`; } },
       numCol('Start', 'start'), numCol('End', 'end'),
       numCol('Duration', 'duration'),
-      { title: 'Waterfall', field: 'start', width: 220, headerSort: false, download: false,
+      { title: 'Waterfall', field: '_wf', width: 220, headerSort: false, download: false,
         formatter: c => { const d = c.getData(); return `<div class="wf"><span style="left:${(d.start / NET_MAX) * 100}%;width:${(((d.end - d.start) || 0) / NET_MAX) * 100}%"></span></div>`; } },
-      { title: 'URL', field: 'url', minWidth: 320, widthGrow: 3, headerFilter: 'input', headerFilterPlaceholder: 'filter…', tooltip: true },
+      { title: 'URL', field: 'url', minWidth: 320, width: 560, widthGrow: 3, headerFilter: 'input', headerFilterPlaceholder: 'filter…', tooltip: true },
       numCol('Runs', 'count', { width: 72 }),
     ],
   });

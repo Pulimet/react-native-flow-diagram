@@ -203,6 +203,8 @@ def test_html_report_markers_title_and_open(tmp_path, monkeypatch):
     assert (sync["start"], sync["duration"], sync["all"], sync["min"]) == (0, 50, [40, 60], 40)
     assert (marker["start"], marker["duration"], marker["count"], marker["min"]) == (80, 0, 0, 80)
     assert payload["meta"]["app_id"] == "com.b" and payload["failures"] == ["boom"]
+    assert payload["meta"]["platform"] == "ios"
+    assert hr.build_payload(avgs, params, {}, runs=[])["meta"]["platform"] == "ios_sim"
     page = Path(params.html_path).read_text()
     assert "<title>Flow Diagram · com.b · &lt;iPhone&gt;</title>" in page
     assert opened == [Path(params.html_path).resolve().as_uri()]
